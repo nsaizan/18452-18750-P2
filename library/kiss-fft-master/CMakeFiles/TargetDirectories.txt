@@ -1,0 +1,7 @@
+/home/nsaizan/Documents/18452-18750-P2/library/kiss-fft-master/CMakeFiles/install/strip.dir
+/home/nsaizan/Documents/18452-18750-P2/library/kiss-fft-master/CMakeFiles/edit_cache.dir
+/home/nsaizan/Documents/18452-18750-P2/library/kiss-fft-master/CMakeFiles/kiss-fft.dir
+/home/nsaizan/Documents/18452-18750-P2/library/kiss-fft-master/CMakeFiles/rebuild_cache.dir
+/home/nsaizan/Documents/18452-18750-P2/library/kiss-fft-master/CMakeFiles/list_install_components.dir
+/home/nsaizan/Documents/18452-18750-P2/library/kiss-fft-master/CMakeFiles/install/local.dir
+/home/nsaizan/Documents/18452-18750-P2/library/kiss-fft-master/CMakeFiles/install.dir

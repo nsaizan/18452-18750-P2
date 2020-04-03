@@ -1,0 +1,2 @@
+gcc fft-test.c -o fft-test -L. -lkiss-fft -lportaudio -I ../../library/portaudio/include/ -I ../../library/kiss-fft-master/ -lm -lpthread -lasound
+
