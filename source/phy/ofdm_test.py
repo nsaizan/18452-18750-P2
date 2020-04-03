@@ -2,33 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 fft_size = 32
-bandwidth = 8e3
-bits_per_sym = 2 # QPSK
+bandwidth = 4e3
+bits_per_sym = 4 # QPSK
 subcarrier_width = bandwidth / fft_size
 symbol_rate = subcarrier_width
 sampling_rate = bandwidth
 cp_samples = fft_size / 8
-
-def filterCP(syms):
-    filtered_syms = []
-    for sym in syms:
-        post_window = 0.5*(1+ \
-                np.cos(np.pi*np.array(range(1, cp_samples+1))/cp_samples))
-        pre_window = post_window[::-1]
-        pre_sym = np.multiply(pre_window, sym[:cp_samples])
-        post_sym = np.multiply(post_window, sym[-cp_samples:])
-        filtered_syms.append(
-            np.concatenate((pre_sym,sym[cp_samples:-cp_samples],post_sym)))
-
-    combined_samples = []
-    combined_samples.extend(filtered_syms[0])
-    for i in range(1,len(filtered_syms)):
-        sym = filtered_syms[i]
-        c = np.add(combined_samples[-cp_samples:], sym[:cp_samples])/2
-        combined_samples[-cp_samples:] = c
-        combined_samples.extend(sym[cp_samples:])
-
-    return combined_samples
 
 def symbolsToOFDM(syms):
     symbol_sets = []
@@ -36,20 +15,35 @@ def symbolsToOFDM(syms):
         ofdm_set = syms[i*fft_size:(i+1)*fft_size]
         ofdm_samps = np.fft.ifft(ofdm_set)
         cp_pre = ofdm_samps[-cp_samples:]
-        cp_post = ofdm_samps[:cp_samples]
-        ofdm_samps = np.concatenate((cp_pre,ofdm_samps,cp_post))
+        ofdm_samps = np.concatenate((cp_pre,ofdm_samps))
         symbol_sets.append(ofdm_samps)
-    return symbol_sets
+
+    all_samps = []
+    for x in symbol_sets:
+        all_samps.extend(x)
+
+    return all_samps
 
 def bitsToSymbols(b):
     syms = []
 
     m = dict()
+    if bits_per_sym == 4:
+        #16QAM
+        m = {0: 1/np.sqrt(10) + 1j/np.sqrt(10), 1: 1/np.sqrt(10) + 3j/np.sqrt(10),
+            2: 3/np.sqrt(10) + 1j/np.sqrt(10), 3: 3/np.sqrt(10) + 3j/np.sqrt(10),
+            4: 1/np.sqrt(10) - 1j/np.sqrt(10), 5: 1/np.sqrt(10) - 3j/np.sqrt(10),
+            6: 3/np.sqrt(10) - 1j/np.sqrt(10), 7: 3/np.sqrt(10) - 3j/np.sqrt(10),
+            8: -1/np.sqrt(10) + 1j/np.sqrt(10), 9: -1/np.sqrt(10) + 3j/np.sqrt(10),
+            10: -3/np.sqrt(10) + 1j/np.sqrt(10), 11: -3/np.sqrt(10) + 3j/np.sqrt(10),
+            12: -1/np.sqrt(10) - 1j/np.sqrt(10), 13: -1/np.sqrt(10) - 3j/np.sqrt(10),
+            14: -3/np.sqrt(10) - 1j/np.sqrt(10), 15: -3/np.sqrt(10) - 3j/np.sqrt(10)}
     if bits_per_sym == 2:
         #QPSK
-        m = {0: np.exp(np.pi*5/4*1j), 1: np.exp(np.pi*3/4*1j), 2: np.exp(np.pi*7/4*1j), 3: np.exp(np.pi*1/4*1j)}
+        m = {0: np.exp(np.pi*5/4*1j), 1: np.exp(np.pi*3/4*1j), 
+            2: np.exp(np.pi*7/4*1j), 3: np.exp(np.pi*1/4*1j)}
     if bits_per_sym == 1:
-        #QPSK
+        #BPSK
         m = {0: np.exp(np.pi*5/4*1j), 1: np.exp(np.pi*1/4*1j)}
 
     for i in range(len(b)/bits_per_sym):
@@ -75,12 +69,30 @@ def stringToBits(s):
         bits.extend(msb)
     return bits
 
-data = "1234123412341234"
-bits = stringToBits(data)
-syms = bitsToSymbols(bits)
-ofdm = symbolsToOFDM(syms)
-samps = filterCP(ofdm)
+def encodeOFDMFrame(d):
+    bits = stringToBits(d)
+    syms = bitsToSymbols(bits)
+    samps = symbolsToOFDM(syms)
+    return samps
 
-plt.plot(np.real(samps))
-plt.plot(np.imag(samps))
+def OFDMtoSymbols(time_syms):
+    symbols = np.fft.fft(time_syms)
+    return symbols
+
+def shiftOFDMFreq(syms, samp_shift):
+    return np.multiply(syms, np.exp(np.linspace(0,fft_size-1,fft_size)*2*np.pi*1j*(float(samp_shift)/fft_size)))
+
+data = "1234123412341234"
+tx_iq = encodeOFDMFrame(data)
+decode = OFDMtoSymbols(tx_iq[39:71])
+decode = shiftOFDMFreq(decode, 1)
+print(decode)
+
+#data = decodeOFDMFrame(tx_iq)
+
+#plt.plot(np.real(tx_iq))
+#plt.plot(np.imag(tx_iq))
+plt.scatter(np.real(decode)[:4], np.imag(decode)[:4])
+plt.xlim((-1, 1))
+plt.ylim((-1, 1))
 plt.show()
