@@ -2,6 +2,7 @@
 #include <math.h>
 #include <portaudio.h>
 #include "audioDeviceInterface.h"
+#include "queue.h"
 /*
 #ifndef M_PI
 #define M_PI (3.15159265)
@@ -9,17 +10,10 @@
 
 #define TABLE_SIZE (200)
 #define SAMPLE_RATE (8000)
-#define FRAMES_PER_BUFFER (64)
+#define FRAMES_PER_BUFFER (1)
 #define NUM_SECONDS (3)
+#define SAMPLE_SILENCE (0)
 */
-
-
-
-/*
- * Queue Implementation for Audio In/Out Streams
- */
-
-//TODO
 
 /*
  * The function called by PortAudio when the audio output buffer is empty.
@@ -31,14 +25,16 @@ static int paOutputStreamCallback(const void *inputBuffer, void *outputBuffer,
 			    void *userData){
 	UserCallbackData *data = (UserCallbackData *) userData;
 	float *out = (float *) outputBuffer;
-    	unsigned long i;
 
     	(void) timeInfo; /* Prevent unused variable warnings. */
     	(void) statusFlags;
     	(void) inputBuffer;
 
-	// if empty send silence //TODO
-        *out++ = queue_pop(data->out);
+	if(queue_is_empty(&out_queue)){
+		*out = SAMPLE_SILENCE;
+	} else {
+        	*out = queue_pop(&out_queue);
+	}
     
 	return paContinue;
 }
@@ -53,14 +49,13 @@ static int paInputStreamCallback(const void *inputBuffer, void *outputBuffer,
 			    void *userData){
 	UserCallbackData *data = (UserCallbackData *) userData;
 	float *in = (float *) inputBuffer;
-    	unsigned long i;
 
     	(void) timeInfo; /* Prevent unused variable warnings. */
     	(void) statusFlags;
     	(void) outputBuffer;
 
-	// while full spinlock //TODO
-        queue_push(data->in, *in);
+	while(queue_is_full(&in_queue));
+        queue_push(&in_queue, *in);
     
 	return paContinue;
 }
@@ -101,7 +96,11 @@ void displayAudioDevices(){
 }
 
 int InitializeAudioInterface(void){
-	/* portaudio */
+	/* setup buffers between portaudio and higher level software */
+	queue_init(&out_queue);
+	queue_init(&in_queue);
+		
+	/* portaudio initialization*/
 	PaError err;
 	err = Pa_Initialize();
 	if(err != paNoError){
@@ -110,7 +109,8 @@ int InitializeAudioInterface(void){
 	}
 
 	/* displays audio device details */
-	//displayAudioDevices();
+	/* if you want to manually select an audio device use this */
+	displayAudioDevices();
 
 	/* select output audio device details */
 	outputParameters.device = Pa_GetDefaultOutputDevice();
@@ -125,7 +125,7 @@ int InitializeAudioInterface(void){
 	
 	/* select input audio device details */
 	inputParameters.device = Pa_GetDefaultInputDevice();
-	if(intputParameters.device == paNoDevice){
+	if(inputParameters.device == paNoDevice){
 		fprintf(stderr,"Error: No default input device.\n"); 
 		goto error;
 	}

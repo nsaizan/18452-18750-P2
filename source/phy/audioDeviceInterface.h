@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <portaudio.h>
+#include "queue.h"
 
 #ifndef M_PI
 #define M_PI (3.15159265)
@@ -8,8 +9,9 @@
 
 #define TABLE_SIZE (200)
 #define SAMPLE_RATE (8000)
-#define FRAMES_PER_BUFFER (64)
+#define FRAMES_PER_BUFFER (1)
 #define NUM_SECONDS (3)
+#define SAMPLE_SILENCE (0)
 
 /* Queue Implementation for Audio In/Out Streams */
 
@@ -17,8 +19,8 @@
 
 /* User Data Interface Structure*/
 typedef struct {
-	Queue in;
-	Queue out;
+	queue_t in;
+	queue_t out;
 } UserCallbackData;
 
 /* User Interface to Stream Callback Function */
