@@ -1,0 +1,2 @@
+gcc audioDeviceInterface-test.c audioDeviceInterface.c queue.c -o audioDeviceInterface-test -L. -lportaudio -I ../../library/portaudio/include/ -lm -lpthread -lasound
+

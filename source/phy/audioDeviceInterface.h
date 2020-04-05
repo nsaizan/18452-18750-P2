@@ -7,7 +7,6 @@
 #define M_PI (3.15159265)
 #endif
 
-#define TABLE_SIZE (200)
 #define SAMPLE_RATE (8000)
 #define FRAMES_PER_BUFFER (1)
 #define NUM_SECONDS (3)
