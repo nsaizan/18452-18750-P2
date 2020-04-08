@@ -26,6 +26,12 @@ int main(){
 	}
 	while(!queue_is_empty(&out_queue));
 
+	/* Sending Recorded Data */
+	for(unsigned long i = 0; i < 24000; i++){
+		queue_push(&out_queue, queue_pop(&in_queue));
+	}
+	while(!queue_is_empty(&out_queue));
+
 	/* Audio Interface De-Initialization */
 	TerminateAudioInterface();
 	return 0;
