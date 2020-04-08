@@ -89,7 +89,7 @@ int queue_is_full(queue_t volatile *queue){
 void queue_init(queue_t volatile *queue){
     queue->front = 0;
     queue->back = 0;
-    queue->maxlen = 512;
+    queue->maxlen = MAX_LEN;
 
     return;
 }

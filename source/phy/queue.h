@@ -1,6 +1,8 @@
 #ifndef FILE_QUEUE_SEEN
 #define FILE_QUEUE_SEEN
 
+#define MAX_LEN (24000)
+
 /** @brief buffer data structure */
 typedef struct {
     float buf[24000];

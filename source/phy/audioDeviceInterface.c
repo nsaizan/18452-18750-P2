@@ -149,7 +149,7 @@ int InitializeAudioInterface(void){
 		goto error;
 	}
 
-	/* open input stream */
+	/* open input stream *//*
 	err = Pa_OpenStream(
 			&stream_in,  
 			&inputParameters,
@@ -162,16 +162,16 @@ int InitializeAudioInterface(void){
 	if(err != paNoError){
 		fprintf(stderr,"Error: Failed to open input stream.\n"); 
 		goto error;
-	}
+	}*/
 
 	err = Pa_SetStreamFinishedCallback( stream_out, &StreamFinished );
 	if( err != paNoError ) goto error;
-	err = Pa_SetStreamFinishedCallback( stream_in, &StreamFinished );
+	//err = Pa_SetStreamFinishedCallback( stream_in, &StreamFinished );
 	if( err != paNoError ) goto error;
 
 	err = Pa_StartStream( stream_out );
 	if( err != paNoError ) goto error;
-	err = Pa_StartStream( stream_in );
+	//err = Pa_StartStream( stream_in );
 	if( err != paNoError ) goto error;
 
 
@@ -189,12 +189,12 @@ int TerminateAudioInterface(void){
 	PaError err;
 	err = Pa_StopStream( stream_out );
 	if( err != paNoError ) goto error;
-	err = Pa_StopStream( stream_in );
+	//err = Pa_StopStream( stream_in );
 	if( err != paNoError ) goto error;
 
 	err = Pa_CloseStream( stream_out );
     	if( err != paNoError ) goto error;
-	err = Pa_CloseStream( stream_in );
+	//err = Pa_CloseStream( stream_in );
     	if( err != paNoError ) goto error;
  	
 

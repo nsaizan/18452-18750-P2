@@ -109,7 +109,7 @@ int main() {
 	displayAudioDevices();
 
 	/* select audio device details */
-	outputParameters.device = Pa_GetDefaultOutputDevice();
+	outputParameters.device = 7;//Pa_GetDefaultOutputDevice();
 	if(outputParameters.device == paNoDevice){
 		fprintf(stderr,"Error: No default output device.\n"); 
 		goto error;
