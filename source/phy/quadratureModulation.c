@@ -2,6 +2,7 @@
 #include <math.h>
 #include "queue.h"
 #include "audioDeviceInterface.h"
+#include "quadratureModulation.h"
 
 #ifndef M_PI
 #define M_PI (3.14159265)
