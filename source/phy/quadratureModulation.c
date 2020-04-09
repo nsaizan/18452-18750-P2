@@ -21,7 +21,7 @@ iq_pair iq_demodulate(float in){
 	float i = in*sine[iq_rec_count];
 	float q = in*cosine[iq_rec_count];
 	iq_rec_count++;
-	iq_send_count%=WAVE_TABLE_SIZE;
+	iq_rec_count%=WAVE_TABLE_SIZE;
 	// not sure if we'll need lpf on i/q but we'll see
 	return {i,q};
 }
