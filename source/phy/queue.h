@@ -1,11 +1,15 @@
 #ifndef FILE_QUEUE_SEEN
 #define FILE_QUEUE_SEEN
 
-#define MAX_LEN (24000)
+#ifndef SAMPLE_RATE
+#define SAMPLE_RATE (44100)
+#endif
+
+#define MAX_LEN (SAMPLE_RATE * 3)
 
 /** @brief buffer data structure */
 typedef struct {
-    float buf[24000];
+    float buf[MAX_LEN];
     int front;
     int back;
     int maxlen;

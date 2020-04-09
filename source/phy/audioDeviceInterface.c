@@ -3,17 +3,22 @@
 #include <portaudio.h>
 #include "audioDeviceInterface.h"
 #include "queue.h"
-/*
-#ifndef M_PI
-#define M_PI (3.15159265)
-#endif
 
-#define TABLE_SIZE (200)
-#define SAMPLE_RATE (8000)
-#define FRAMES_PER_BUFFER (1)
-#define NUM_SECONDS (3)
-#define SAMPLE_SILENCE (0)
-*/
+void audio_flush_out(void){
+	while(!queue_is_empty(&out_queue));
+	return;
+}
+
+void audio_send(float data){
+	while(queue_is_full(&out_queue));
+	queue_push(&out_queue, data);
+	return;
+}
+
+float audio_receive(void){
+	while(queue_is_empty(&in_queue));
+	return queue_pop(&in_queue);
+}
 
 /*
  * The function called by PortAudio when the audio output buffer is empty.

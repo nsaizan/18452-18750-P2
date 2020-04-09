@@ -7,9 +7,7 @@
 #define M_PI (3.15159265)
 #endif
 
-#define SAMPLE_RATE (8000)
 #define FRAMES_PER_BUFFER (1)
-#define NUM_SECONDS (3)
 #define SAMPLE_SILENCE (0)
 
 /* Queue Implementation for Audio In/Out Streams */
@@ -32,6 +30,12 @@ PaStream *stream_out;
 /* Device Setup Properties */
 PaStreamParameters inputParameters;
 PaStreamParameters outputParameters;
+
+void audio_flush_out(void);
+
+void audio_send(float data);
+
+float audio_receive(void);
 
 /* Function that is called when audio out buffer is empty */
 static int paOutputStreamCallback(const void *inputBuffer, void *outputBuffer,
