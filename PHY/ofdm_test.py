@@ -8,6 +8,19 @@ subcarrier_width = bandwidth / fft_size
 symbol_rate = subcarrier_width
 sampling_rate = bandwidth
 cp_samples = fft_size / 8
+short_train = [1-1j, 0, 0, 0, 0, 0, 0, 0, -1-1j, 0, 0, 0, 0, 0, 0, 0, 1+1j, 0, 0, 0, 0, 0, 0, 0, -1+1j, 0, 0, 0, 0, 0, 0, 0]
+
+def generatePreamble():
+    pn = generateZCSequence()
+    return pn * 8
+
+def generateZCSequence():
+    pn = list()
+    nzc = fft_size / 4
+    u = 1
+    for n in range(nzc):
+        pn.append(np.exp(-1j*np.pi*u*n*(n+np.mod(nzc, 2))/nzc))
+    return pn
 
 def symbolsToOFDM(syms):
     symbol_sets = []
@@ -48,13 +61,13 @@ def bitsToSymbols(b):
 
     for i in range(len(b)/bits_per_sym):
         val = 0
-        place = bits_per_sym
+        place = np.power(2,bits_per_sym-1)
         for bit in range(bits_per_sym):
             val += b[i+bit] * place
             place /= 2
         sym = m[val]
         syms.append(sym)
-
+    
     return syms
 
 def stringToBits(s):
@@ -82,17 +95,34 @@ def OFDMtoSymbols(time_syms):
 def shiftOFDMFreq(syms, samp_shift):
     return np.multiply(syms, np.exp(np.linspace(0,fft_size-1,fft_size)*2*np.pi*1j*(float(samp_shift)/fft_size)))
 
-data = "1234123412341234"
-tx_iq = encodeOFDMFrame(data)
-decode = OFDMtoSymbols(tx_iq[39:71])
-decode = shiftOFDMFreq(decode, 1)
-print(decode)
+def roughSyncSig(samps, zcs):
+    peaks = []
+    zcs_conj = np.conjugate(zcs)
+    for i in range(len(samps)-len(zcs)):
+        peaks.append(np.sum(np.multiply(samps[i:i+len(zcs)],zcs_conj)))
+    
+    return peaks
 
+
+
+data = "12345678qwertyui"
+tx_iq = encodeOFDMFrame(data)
+decode = OFDMtoSymbols(tx_iq[4:36])
+print(decode)
+#decode = shiftOFDMFreq(decode, 0)
+#print(decode)
+x = generatePreamble()
+x = np.add(x, np.random.normal(size=len(x), scale=0.1))
+x = np.concatenate((np.random.normal(size=len(x), scale=0.1), x, np.random.normal(size=len(x), scale=0.1)))
+x = np.multiply(x, np.exp(np.linspace(0,len(x)-1,len(x))*2*np.pi*1j*(10.0/bandwidth)))
+plt.plot(np.imag(roughSyncSig(x, generateZCSequence())))
+plt.plot(np.real(roughSyncSig(x, generateZCSequence())))
+plt.show()
 #data = decodeOFDMFrame(tx_iq)
 
 #plt.plot(np.real(tx_iq))
 #plt.plot(np.imag(tx_iq))
-plt.scatter(np.real(decode)[:4], np.imag(decode)[:4])
+plt.scatter(np.real(decode)[:], np.imag(decode)[:])
 plt.xlim((-1, 1))
 plt.ylim((-1, 1))
 plt.show()
