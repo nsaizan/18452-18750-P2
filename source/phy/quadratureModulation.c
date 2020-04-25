@@ -42,5 +42,5 @@ void iq_send(float i, float q){
 }
 
 iq_pair iq_receive(void){
-	return iq_demodulate(audio_receive);
+	return iq_demodulate(audio_receive());
 }

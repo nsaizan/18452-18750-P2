@@ -168,6 +168,7 @@ int InitializeAudioInterface(void){
 		fprintf(stderr,"Error: Failed to open input stream.\n"); 
 		goto error;
 	}
+	printf("sample rate %d", SAMPLE_RATE);
 
 	err = Pa_SetStreamFinishedCallback( stream_out, &StreamFinished );
 	if( err != paNoError ) goto error;
