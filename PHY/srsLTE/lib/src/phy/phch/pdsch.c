@@ -1084,6 +1084,14 @@ int local_pdsch_codeword_decode ( srslte_pdsch_t*     q,
   return ret;
 }
 
+int local_turbo_init(){
+
+}
+
+int local_turbo_encode(){
+  
+}
+
 int local_pdsch_codeword_encode(srslte_pdsch_t*         q,
                                 srslte_pdsch_cfg_t*     cfg,
                                 uint8_t*                data)
