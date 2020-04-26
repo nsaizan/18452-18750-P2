@@ -1084,12 +1084,103 @@ int local_pdsch_codeword_decode ( srslte_pdsch_t*     q,
   return ret;
 }
 
+static srslte_pdsch_t local_pdsch_enb;
+static srslte_pdsch_t local_pdsch_ue;
+static srslte_pdsch_cfg_t local_cfg;
+static srslte_sch_t local_dl_sch;
+static srslte_softbuffer_tx_t* local_softbuffer_tx[SRSLTE_MAX_TB] = {};
+static srslte_softbuffer_rx_t* local_softbuffer_rx[SRSLTE_MAX_TB] = {};
+static srslte_cell_t local_cell = {.nof_prb         = 100,
+                                   .nof_ports       = 1,
+                                   .id              = 1,
+                                   .cp              = SRSLTE_CP_NORM,
+                                   .phich_resources = SRSLTE_PHICH_R_1,
+                                   .phich_length    = SRSLTE_PHICH_NORM};
 int local_turbo_init(){
+  srslte_pdsch_init_enb(&local_pdsch_enb, 100);
+  srslte_pdsch_init_ue(&local_pdsch_ue, 100, 1);
 
+  for (int i = 0; i < SRSLTE_MAX_TB; i++) {
+    local_softbuffer_tx[i] = (srslte_softbuffer_tx_t*)calloc(sizeof(srslte_softbuffer_tx_t), 1);
+    if (!local_softbuffer_tx[i]) {
+    ERROR("Error allocating softbuffer_tx\n");
+    exit(1);
+    }
+
+    if (srslte_softbuffer_tx_init(local_softbuffer_tx[i], local_cell.nof_prb)) {
+    ERROR("Error initiating softbuffer_tx\n");
+    exit(1);
+    }
+
+    local_softbuffer_rx[i] = (srslte_softbuffer_rx_t*)calloc(sizeof(srslte_softbuffer_rx_t), 1);
+    if (!local_softbuffer_rx[i]) {
+    ERROR("Error allocating softbuffer_rx\n");
+    exit(1);
+    }
+
+    if (srslte_softbuffer_rx_init(local_softbuffer_rx[i], local_cell.nof_prb)) {
+    ERROR("Error initiating softbuffer_rx\n");
+    exit(1);
+    }
+  }
+
+  local_cfg.rnti = 0x1234;
+  local_cfg.grant.nof_layers = 1;
+  local_cfg.grant.nof_layers = 1;
+  local_cfg.grant.tx_scheme = SRSLTE_TXSCHEME_PORT0;
+  local_cfg.grant.nof_re = 200; // Num Symbols
+  local_cfg.grant.tb[0].cw_idx = 0;
+  local_cfg.grant.tb[0].enabled = true;
+  local_cfg.grant.tb[0].mod = SRSLTE_MOD_QPSK;
+  local_cfg.grant.tb[0].tbs = 256; // Size in bits
+  local_cfg.grant.tb[0].nof_bits = local_cfg.grant.nof_re * srslte_mod_bits_x_symbol(local_cfg.grant.tb[0].mod);
+  local_cfg.grant.tb[0].rv = 0;
+  local_cfg.softbuffers.tx[0] = local_softbuffer_tx[0];
+  local_cfg.softbuffers.tx[1] = local_softbuffer_tx[1];
+
+  srslte_sch_init(&local_dl_sch);
 }
 
-int local_turbo_encode(){
+void local_turbo_encode(int nof_re, int mod_order, int nof_bytes, uint8_t * data, cf_t * syms){
+  local_cfg.softbuffers.tx[0] = local_softbuffer_tx[0];
+  local_cfg.softbuffers.tx[1] = local_softbuffer_tx[1];
+  srslte_softbuffer_tx_reset(&local_cfg.softbuffers.tx[0]);
+  srslte_softbuffer_tx_reset(&local_cfg.softbuffers.tx[1]);
   
+  local_cfg.grant.nof_re = nof_re;
+  local_cfg.grant.tb[0].mod = mod_order;
+  local_cfg.grant.tb[0].tbs = nof_bytes * 8;
+
+  local_pdsch_codeword_encode(&local_pdsch_enb, &local_cfg, data);
+
+  memcpy(syms, local_pdsch_enb.d[0], sizeof(cf_t) * nof_re);
+}
+
+bool local_turbo_decode(int nof_re, int mod_order, int nof_bytes, uint8_t * data, cf_t * syms){
+  local_cfg.softbuffers.rx[0] = local_softbuffer_rx[0];
+  local_cfg.softbuffers.rx[1] = local_softbuffer_rx[1];
+  srslte_softbuffer_rx_reset(&local_cfg.softbuffers.rx[0]);
+  srslte_softbuffer_rx_reset(&local_cfg.softbuffers.rx[1]);
+
+  local_cfg.grant.nof_re = nof_re;
+  local_cfg.grant.tb[0].mod = mod_order;
+  local_cfg.grant.tb[0].tbs = nof_bytes * 8;
+
+  memcpy(local_pdsch_ue.d[0], syms, sizeof(cf_t) * nof_re);
+
+  int ret = local_pdsch_codeword_decode(&local_pdsch_ue, &local_cfg, &local_dl_sch, data);
+}
+
+void local_turbo_end(){
+  srslte_sch_free(&local_dl_sch);
+
+  for (int i = 0; i < SRSLTE_MAX_TB; i++) {
+    srslte_softbuffer_tx_free(&local_softbuffer_tx[i]);
+    srslte_softbuffer_rx_free(&local_softbuffer_rx[i]);
+  }
+  
+  srslte_pdsch_free(&local_pdsch_ue);
+  srslte_pdsch_free(&local_pdsch_enb);
 }
 
 int local_pdsch_codeword_encode(srslte_pdsch_t*         q,

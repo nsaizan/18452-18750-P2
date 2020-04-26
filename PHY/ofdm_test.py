@@ -88,6 +88,7 @@ subcarrier_width = bandwidth / fft_size
 symbol_rate = subcarrier_width
 sampling_rate = bandwidth
 cp_samples = fft_size / 8
+real_samp_rate = 48e3
 
 num_ref_sym = 8
 ref_sym_spacing = fft_size / num_ref_sym
@@ -107,6 +108,11 @@ def generateZCSequence(l):
 shortZC = generateZCSequence(fft_size / 4)
 longZC = generateZCSequence(fft_size)
 preamble_samps = longZC + 4 * shortZC
+
+def shiftSamples(samps, freq, phase=0):
+    return np.multiply(samps, np.exp(
+        np.add(np.linspace(0,len(samps)-1,len(samps))*2*np.pi*1j*(float(freq)/sampling_rate),
+        phase)))
 
 def symbolsToOFDM(syms):
     symbol_sets = []
@@ -235,6 +241,13 @@ def extractShortRefs(samples, start_id):
     print(refs)
     return np.unwrap(np.angle(refs))
 
+def generateRealSamps(data_bytes):
+    iq = encodeOFDMFrame(data_bytes)
+    interpolate = np.repeat(iq, int(real_samp_rate/bandwidth)) # x12 to get to 48khz
+    shift = shiftSamples(interpolate, 8000)
+    samps = np.real(shift)
+    return samps
+
 data = "hello world its me"*32
 tx_iq = np.multiply(encodeOFDMFrame(data), 3)
 #decode = shiftOFDMFreq(decode, 0)
@@ -255,7 +268,7 @@ x = np.multiply(x, np.exp(np.add(np.linspace(0,len(x)-1,len(x))*2*np.pi*(freq_of
 x = np.divide(x, 1)
 
 x = np.fromfile("samps.bin", dtype=np.complex64)
-x = x[len(x)*1/3:]
+x = x[len(x)*0/3:]
 plt.plot(np.real(x))
 plt.plot(np.imag(x))
 plt.show()
@@ -300,7 +313,7 @@ plt.plot(np.real(phase_corr))
 plt.show()
 
 
-for i in range(30):
+for i in range(60):
     exerpt = phase_corr[4 + start_idx + len(preamble_samps) + i*36: 4 + start_idx + len(preamble_samps) + 32 + i*36]
     decode = OFDMtoSymbols(exerpt)
     decode = fixWithReferenceSymbols(decode)

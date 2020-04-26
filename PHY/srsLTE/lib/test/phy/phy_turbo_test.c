@@ -206,11 +206,11 @@ int main(int argc, char** argv)
     cfg.grant.nof_layers = 1;
     cfg.grant.nof_layers = 1;
     cfg.grant.tx_scheme = SRSLTE_TXSCHEME_PORT0;
-    cfg.grant.nof_re = 200;
+    cfg.grant.nof_re = 200; // Num Symbols
     cfg.grant.tb[0].cw_idx = 0;
     cfg.grant.tb[0].enabled = true;
-    cfg.grant.tb[0].mod = SRSLTE_MOD_16QAM;
-    cfg.grant.tb[0].tbs = 256;
+    cfg.grant.tb[0].mod = SRSLTE_MOD_QPSK;
+    cfg.grant.tb[0].tbs = 256; // Size in bits
     cfg.grant.tb[0].nof_bits = cfg.grant.nof_re * srslte_mod_bits_x_symbol(cfg.grant.tb[0].mod);
     cfg.grant.tb[0].rv = 0;
     cfg.softbuffers.tx[0] = softbuffer_tx[0];
