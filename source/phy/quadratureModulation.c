@@ -18,12 +18,12 @@ float iq_modulate(float i, float q){
 }
 
 iq_pair iq_demodulate(float in){
-	float i = in*sine[iq_rec_count];
-	float q = in*cosine[iq_rec_count];
+	float i = in*iq_sine[iq_rec_count];
+	float q = in*iq_cosine[iq_rec_count];
 	iq_rec_count++;
 	iq_rec_count%=WAVE_TABLE_SIZE;
-	// not sure if we'll need lpf on i/q but we'll see
-	return {i,q};
+	iq_pair vals = {i,q};
+	return vals;
 }
 
 void iq_init(void){

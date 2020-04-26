@@ -1,3 +1,6 @@
+#ifndef FILE_AUDIO_SEEN
+#define FILE_AUDIO_SEEN
+
 #include <stdio.h>
 #include <math.h>
 #include <portaudio.h>
@@ -62,3 +65,5 @@ int InitializeAudioInterface(void);
 
 /* Shuts down Audio Stream */
 int TerminateAudioInterface(void);
+
+#endif

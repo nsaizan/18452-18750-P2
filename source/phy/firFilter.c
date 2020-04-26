@@ -13,15 +13,15 @@ float insamp_I[ BUFFER_LEN ];
 float insamp_Q[ BUFFER_LEN ];
  
 // FIR init for I data
-void firFloatInit( void )
+void firFloatInitA( void )
 {
-    memset( insamp_I, 0, sizeof( insamp ) );
+    memset( insamp_I, 0, sizeof( insamp_I ) );
 }
  
 // FIR init for Q data
-void firFloatInit( void )
+void firFloatInitB( void )
 {
-    memset( insamp_Q, 0, sizeof( insamp ) );
+    memset( insamp_Q, 0, sizeof( insamp_Q ) );
 }
  
 // the FIR filter function for I data

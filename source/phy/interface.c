@@ -77,8 +77,8 @@ void file_interface_receive(void){
         /* low pass filter iq_pairs */
         float i_arr_filtered[SAMPLES];
         float q_arr_filtered[SAMPLES];
-        firFloatA( coeffs, i_arr, i_arr_filtered, SAMPLES, FILTER_LEN );
-        firFloatB( coeffs, q_arr, q_arr_filtered, SAMPLES, FILTER_LEN );
+        firFloatA( fir_coeffs, i_arr, i_arr_filtered, SAMPLES, FILTER_LEN );
+        firFloatB( fir_coeffs, q_arr, q_arr_filtered, SAMPLES, FILTER_LEN );
 
 	/* recombine i & q arrays into single iq array */
         iq_pair iq_pairs_filtered[SAMPLES];

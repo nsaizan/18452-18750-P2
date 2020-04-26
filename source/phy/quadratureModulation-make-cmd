@@ -1,0 +1,1 @@
+gcc quadratureModulation-test.c quadratureModulation.c audioDeviceInterface.c queue.c -o quadratureModulation-test -L. -lportaudio -I ../../library/portaudio/include/ -lm -lpthread -lasound

@@ -1,3 +1,6 @@
+#ifndef FILE_IQ_SEEN
+#define FILE_IQ_SEEN
+
 #include <stdio.h>
 #include <math.h>
 #include "queue.h"
@@ -8,10 +11,10 @@
 #endif
 
 #define IQ_CARRIER_FREQ (5000)
-#define WAVE_TABLE_SIZE (SAMPLE_RATE/IQ_CARRIER_FREQUENCY)
+#define WAVE_TABLE_SIZE (SAMPLE_RATE/IQ_CARRIER_FREQ)
 
-iq_sine[WAVE_TABLE_SIZE];
-iq_cosine[WAVE_TABLE_SIZE];
+float iq_sine[WAVE_TABLE_SIZE];
+float iq_cosine[WAVE_TABLE_SIZE];
 int iq_send_count;
 int iq_rec_count;
 
@@ -34,3 +37,5 @@ void iq_send(float i, float q);
 
 /* reads an i/q pair from the audio in pipeline */
 iq_pair iq_receive(void);
+
+#endif

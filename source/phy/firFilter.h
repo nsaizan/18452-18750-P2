@@ -1,24 +1,34 @@
+#ifndef FILE_FIR_SEEN
+#define FILE_FIR_SEEN
+
 /*
  * This code originates from the website:
  * 	Shawn's DSP Tutorials
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
-#include "quadratureModulation.h"
 
-// maximum number of inputs that can be handled
-// in one function call
-#define MAX_INPUT_LEN   80
-// maximum length of filter than can be handled
-#define MAX_FLT_LEN     63
-// buffer to hold all of the input samples
+/* Maximum number of inputs that can be handled in one function call */
+#define MAX_INPUT_LEN 80
+
+/* Maximum length of filter than can be handled */
+#define MAX_FLT_LEN 63
+
+/* Buffer to hold all of the input samples */
 #define BUFFER_LEN      (MAX_FLT_LEN - 1 + MAX_INPUT_LEN)
 
-#define SAMPLES 	80
+/* Number of new audio samples per filter call 
+ * Must be less than MAX_INPUT_LEN */
+#define SAMPLES  80
 
+/* Length of the fir filter 
+ * Must be less than MAX_FLT_LEN */
 #define FILTER_LEN  63
-double coeffs[ FILTER_LEN ] =
+
+/* old coefficients from the original implemented of code */
+static double fir_old_coeffs[ FILTER_LEN ] =
 {
   -0.0448093,  0.0322875,   0.0181163,   0.0087615,   0.0056797,
    0.0086685,  0.0148049,   0.0187190,   0.0151019,   0.0027594,
@@ -33,14 +43,39 @@ double coeffs[ FILTER_LEN ] =
   -0.0187804, -0.0232561,  -0.0132676,   0.0027594,   0.0151019,
    0.0187190,  0.0148049,   0.0086685,   0.0056797,   0.0087615,
    0.0181163,  0.0322875,  -0.0448093
-};//TODO update values to 10Khz cutoff
+};
 
-void firFloatAInit( void );
+/* coefficients of the fir filter, 9kHz passband freq */
+static double oldoldfir_coeffs[ FILTER_LEN ] = 
+{
+  -0.000104,  0.000084,  0.000469,  0.000345,  -0.000560,  
+  -0.000912,  0.000469,  0.001798,  0.000213,  -0.002727,  
+  -0.001731,  0.003241,  0.004174,  -0.002679,  -0.007291,  
+  0.000312,  0.010387,  0.004456,  -0.012287,  -0.011866,  
+  0.011384,  0.021625,  -0.005690,  -0.032844,  -0.007397,  
+  0.044131,  0.032623,  -0.053839,  -0.085766,  0.060412,  
+  0.311226,  0.437262,  0.311226,  0.060412,  -0.085766,  
+  -0.053839,  0.032623,  0.044131,  -0.007397,  -0.032844,  
+  -0.005690,  0.021625,  0.011384,  -0.011866,  -0.012287,  
+  0.004456,  0.010387,  0.000312,  -0.007291,  -0.002679,  
+  0.004174,  0.003241,  -0.001731,  -0.002727,  0.000213,  
+  0.001798,  0.000469,  -0.000912,  -0.000560,  0.000345,  
+  0.000469,  0.000084,  -0.000104
+};
 
-void firFloatBInit( void );
+static double fir_coeffs[ FILTER_LEN ] =
+{
+0.000077,  -0.000022,  -0.000253,  -0.000533,  -0.000559,  -0.000050,  0.000905,  0.001668,  0.001360,  -0.000395,  -0.002789,  -0.003968,  -0.002244,  0.002249,  0.006838,  0.007578,  0.002209,  -0.007186,  -0.014260,  -0.012167,  0.000863,  0.018177,  0.027067,  0.016834,  -0.011948,  -0.043603,  -0.053200,  -0.020354,  0.056682,  0.155768,  0.239135,  0.271667,  0.239135,  0.155768,  0.056682,  -0.020354,  -0.053200,  -0.043603,  -0.011948,  0.016834,  0.027067,  0.018177,  0.000863,  -0.012167,  -0.014260,  -0.007186,  0.002209,  0.007578,  0.006838,  0.002249,  -0.002244,  -0.003968,  -0.002789,  -0.000395,  0.001360,  0.001668,  0.000905,  -0.000050,  -0.000559,  -0.000533,  -0.000253,  -0.000022,  0.000077
+};
 
-void firFloatA( double *coeffs, double *input, double *output,
+void firFloatInitA( void );
+
+void firFloatInitB( void );
+
+void firFloatA( double *coeffs, float *input, float *output,
 		int length, int filterLength );
 
-void firFloatB( double *coeffs, double *input, double *output,
+void firFloatB( double *coeffs, float *input, float *output,
 		int length, int filterLength );
+
+#endif
