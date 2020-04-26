@@ -5,6 +5,10 @@
 #include "quadratureModulation.h"
 #include "firFilter.h"
 
+#define DECIMATE_FACTOR (12)
+
+uint32_t decimate_counter;
+
 /* initializes both send/rec files and filter*/
 void file_interface_init(void){
 	file_rec_interface_init();
@@ -87,11 +91,16 @@ void file_interface_receive(void){
                 iq_pairs_filtered[x].q = q_arr_filtered[x];
         }
 
+        	uint32_t arr_size = SAMPLES * 4;
         /* send iq_pairs to file */
-        uint32_t arr_size = SAMPLES * 4;
-        char* iq_pairs_outbound = (char *) iq_pairs_filtered;
-        write(fifo, iq_pairs_outbound, arr_size);
-
+	for(x = 0; x < SAMPLES; x++){
+        	if(decimate_counter == 0){
+			write(fifo, (char *) iq_pairs_filtered, 4);
+		}
+		decimate_counter++;
+		decimate_counter %= DECIMATE_FACTOR;
+        	iq_pairs_filtered+=4;
+	}
         return;
 }
 

@@ -12,6 +12,8 @@
 #define ITERATIONS (2)
 #define DURATION (SAMPLES * ITERATIONS)
 
+#define RAW_OUTPUT 0
+
 int main(){
 	/* initialize iq pipeline */
 	iq_init();
@@ -21,14 +23,15 @@ int main(){
 	firFloatInitB();
 
 	/* display test info */
-	printf("=========================================\n");
-	printf("Testing IQ modulation and demodulation\n");
-	printf("*This is WITH lpf to remove aliasing*\n");
-	printf("For this test, I = -1, Q = 1\n");
-	printf("=========================================\n");
-	printf("input=(-1,1)\ti\t\tq\n");
-	printf("-------\t\t------\t\t------\n");
-
+	if(!RAW_OUTPUT){
+		printf("=========================================\n");
+		printf("Testing IQ modulation and demodulation\n");
+		printf("*This is WITH lpf to remove aliasing*\n");
+		printf("For this test, I = -1, Q = 1\n");
+		printf("=========================================\n");
+		printf("input=(-1,1)\ti\t\tq\n");
+		printf("-------\t\t------\t\t------\n");
+	}
 	float post_mod[SAMPLES];
 	iq_pair pair_post_demod[SAMPLES];
 	float i_pre_filter[SAMPLES];
@@ -50,8 +53,13 @@ int main(){
 
 		/* print the data */
 		for(unsigned long y = 0; y < SAMPLES; y++){
-			printf("%f\t%f\t%f\n", post_mod[y], 
+			if(!RAW_OUTPUT){
+				printf("%f\t%f\t%f\n", post_mod[y], 
 					i_post_filter[y], q_post_filter[y]);
+			} else {
+				printf("%f,%f,%f\n", post_mod[y], 
+					i_post_filter[y], q_post_filter[y]);
+			}
 		}
 	}
 
