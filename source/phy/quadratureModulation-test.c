@@ -25,6 +25,8 @@ int main(){
 		printf("=========================================\n");
 		printf("input=(-1,1)\ti\t\tq\n");
 		printf("-------\t\t------\t\t------\n");
+	} else {
+		printf("data = [");
 	}
 	for(unsigned long i = 0; i < DURATION/(30*48); i++){
 		float out = iq_modulate(-1, 1);
@@ -32,7 +34,11 @@ int main(){
 		if(!RAW_OUTPUT){
 			printf("%f\t%f\t%f\n", out, pair.i, pair.q);
 		} else {
-			printf("%f,%f,%f\n", out, pair.i, pair.q);
+                        if(i == (DURATION/(30*48) - 1)){
+                        	printf("%f,%f,%f]\n", out, pair.i, pair.q);
+                        } else {
+                        	printf("%f,%f,%f,", out, pair.i, pair.q);
+                	}
 		}
 	}
 
