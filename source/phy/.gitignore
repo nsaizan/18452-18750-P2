@@ -1,0 +1,4 @@
+*.bin
+*.npy
+*.pyc
+./srsLTE/build/*
