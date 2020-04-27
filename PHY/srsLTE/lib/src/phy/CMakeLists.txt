@@ -55,7 +55,7 @@ set(srslte_srcs     $<TARGET_OBJECTS:srslte_agc>
 
 
 
-add_library(srslte_phy STATIC ${srslte_srcs})
+add_library(srslte_phy SHARED ${srslte_srcs})
 target_link_libraries(srslte_phy ${FFT_LIBRARIES})
 
 target_link_libraries(srslte_phy pthread m)

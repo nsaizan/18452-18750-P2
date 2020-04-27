@@ -147,7 +147,7 @@ uint8_t*                e_bits[SRSLTE_MAX_TB]        = {};
 
 int main(int argc, char** argv)
 {
-    for (int i = 0; i < SRSLTE_MAX_TB; i++) {
+    /*for (int i = 0; i < SRSLTE_MAX_TB; i++) {
         softbuffer_tx[i] = (srslte_softbuffer_tx_t*)calloc(sizeof(srslte_softbuffer_tx_t), 1);
         if (!softbuffer_tx[i]) {
         ERROR("Error allocating softbuffer_tx\n");
@@ -267,5 +267,28 @@ int main(int argc, char** argv)
     for (int i = 0; i < cfg.grant.tb[0].tbs/8; i++){
       printf("%d ", (int)data_rx[0][i]);
     }
-    printf("\n");
+    printf("\n");*/
+
+    local_turbo_init();
+
+    size_t dsize = 63;
+    uint8_t data_in[dsize];
+    uint8_t data_out[dsize];
+    for (int i = 0; i < dsize; i++) data_in[i] = i;
+    for (int i = 0; i < dsize; i++){
+      printf("%d ", (int)data_in[i]);
+    }
+
+    cf_t syms[dsize*6]; // 1.5x
+
+    local_turbo_encode(dsize*6, SRSLTE_MOD_QPSK, dsize, data_in, syms);
+    for (int i = 0; i < dsize*6; i++){
+      if (i % 5 == 0) syms[i] = 0;
+    }
+
+    printf("Result %d\n", local_turbo_decode(dsize*6, SRSLTE_MOD_QPSK, dsize, data_out, syms));
+
+    for (int i = 0; i < dsize; i++){
+      printf("%d ", (int)data_out[i]);
+    }
 }

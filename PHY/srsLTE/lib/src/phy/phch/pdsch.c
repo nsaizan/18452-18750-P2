@@ -1096,7 +1096,7 @@ static srslte_cell_t local_cell = {.nof_prb         = 100,
                                    .cp              = SRSLTE_CP_NORM,
                                    .phich_resources = SRSLTE_PHICH_R_1,
                                    .phich_length    = SRSLTE_PHICH_NORM};
-int local_turbo_init(){
+void local_turbo_init(){
   srslte_pdsch_init_enb(&local_pdsch_enb, 100);
   srslte_pdsch_init_ue(&local_pdsch_ue, 100, 1);
 
@@ -1144,12 +1144,13 @@ int local_turbo_init(){
 void local_turbo_encode(int nof_re, int mod_order, int nof_bytes, uint8_t * data, cf_t * syms){
   local_cfg.softbuffers.tx[0] = local_softbuffer_tx[0];
   local_cfg.softbuffers.tx[1] = local_softbuffer_tx[1];
-  srslte_softbuffer_tx_reset(&local_cfg.softbuffers.tx[0]);
-  srslte_softbuffer_tx_reset(&local_cfg.softbuffers.tx[1]);
+  srslte_softbuffer_tx_reset(local_cfg.softbuffers.tx[0]);
+  srslte_softbuffer_tx_reset(local_cfg.softbuffers.tx[1]);
   
   local_cfg.grant.nof_re = nof_re;
   local_cfg.grant.tb[0].mod = mod_order;
   local_cfg.grant.tb[0].tbs = nof_bytes * 8;
+  local_cfg.grant.tb[0].nof_bits = local_cfg.grant.nof_re * srslte_mod_bits_x_symbol(local_cfg.grant.tb[0].mod);
 
   local_pdsch_codeword_encode(&local_pdsch_enb, &local_cfg, data);
 
@@ -1159,24 +1160,27 @@ void local_turbo_encode(int nof_re, int mod_order, int nof_bytes, uint8_t * data
 bool local_turbo_decode(int nof_re, int mod_order, int nof_bytes, uint8_t * data, cf_t * syms){
   local_cfg.softbuffers.rx[0] = local_softbuffer_rx[0];
   local_cfg.softbuffers.rx[1] = local_softbuffer_rx[1];
-  srslte_softbuffer_rx_reset(&local_cfg.softbuffers.rx[0]);
-  srslte_softbuffer_rx_reset(&local_cfg.softbuffers.rx[1]);
+  srslte_softbuffer_rx_reset(local_cfg.softbuffers.rx[0]);
+  srslte_softbuffer_rx_reset(local_cfg.softbuffers.rx[1]);
 
   local_cfg.grant.nof_re = nof_re;
   local_cfg.grant.tb[0].mod = mod_order;
   local_cfg.grant.tb[0].tbs = nof_bytes * 8;
+  local_cfg.grant.tb[0].nof_bits = local_cfg.grant.nof_re * srslte_mod_bits_x_symbol(local_cfg.grant.tb[0].mod);
 
   memcpy(local_pdsch_ue.d[0], syms, sizeof(cf_t) * nof_re);
 
   int ret = local_pdsch_codeword_decode(&local_pdsch_ue, &local_cfg, &local_dl_sch, data);
+
+  return (ret == 0);
 }
 
 void local_turbo_end(){
   srslte_sch_free(&local_dl_sch);
 
   for (int i = 0; i < SRSLTE_MAX_TB; i++) {
-    srslte_softbuffer_tx_free(&local_softbuffer_tx[i]);
-    srslte_softbuffer_rx_free(&local_softbuffer_rx[i]);
+    srslte_softbuffer_tx_free(local_softbuffer_tx[i]);
+    srslte_softbuffer_rx_free(local_softbuffer_rx[i]);
   }
   
   srslte_pdsch_free(&local_pdsch_ue);

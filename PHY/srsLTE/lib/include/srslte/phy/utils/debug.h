@@ -30,8 +30,8 @@
 #ifndef SRSLTE_DEBUG_H
 #define SRSLTE_DEBUG_H
 
-#include "phy_logger.h"
 #include "srslte/config.h"
+#include "phy_logger.h"
 #include <stdio.h>
 
 #define SRSLTE_VERBOSE_DEBUG 2

@@ -36,6 +36,8 @@
 
 #include "srslte/phy/common/phy_common.h"
 #include "srslte/phy/dft/dft.h"
+#include "srslte/phy/sync/sss.h"
+#include "srslte/phy/sync/gen_sss.h"
 
 #define SRSLTE_SSSS_NOF_SEQ 336
 #define SRSLTE_SSSS_N 31

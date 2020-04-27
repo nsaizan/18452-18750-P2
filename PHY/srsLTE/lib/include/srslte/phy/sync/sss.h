@@ -85,7 +85,7 @@ SRSLTE_API int srslte_sss_resize(srslte_sss_t* q, uint32_t fft_size);
 
 SRSLTE_API void srslte_sss_free(srslte_sss_t* q);
 
-SRSLTE_API void srslte_sss_generate(float* signal0, float* signal5, uint32_t cell_id);
+//SRSLTE_API void srslte_sss_generate(float* signal0, float* signal5, uint32_t cell_id);
 
 SRSLTE_API void srslte_sss_put_slot(float* sss, cf_t* symbol, uint32_t nof_prb, srslte_cp_t cp);
 

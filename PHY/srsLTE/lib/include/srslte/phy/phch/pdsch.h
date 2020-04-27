@@ -115,7 +115,7 @@ SRSLTE_API int local_pdsch_codeword_decode ( srslte_pdsch_t*     q,
                                   srslte_sch_t*       dl_sch,
                                   uint8_t*            data);
 
-SRSLTE_API int local_turbo_init();
+SRSLTE_API void local_turbo_init();
 SRSLTE_API void local_turbo_encode(int nof_re, int mod_order, int nof_bytes, uint8_t * data, cf_t * syms);
 SRSLTE_API bool local_turbo_decode(int nof_re, int mod_order, int nof_bytes, uint8_t * data, cf_t * syms);
 SRSLTE_API void local_turbo_end();

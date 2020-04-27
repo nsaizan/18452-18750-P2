@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import errno
 import collections
+import sys
 
 cazac_buffer = collections.deque([], maxlen=len(longZC))
 packet_samps = np.empty_like([0]*packet_len_samps, dtype=np.complex64)
@@ -102,8 +103,10 @@ def decodePacket():
     data_syms = getDataSymbols(phase_corr)
     return data_syms
 
+total_count = 0
+good_count = 0
 def processSample(s):
-    global rx_state, packet_samps_count
+    global rx_state, packet_samps_count, total_count, good_count
     if rx_state == MODE_WAIT:
         cazac_buffer.append(s)
         
@@ -130,16 +133,28 @@ def processSample(s):
         # Have complete packet, now process it
         if packet_samps_count >= len(packet_samps):
             syms = decodePacket()
-            data_string = dataSymsToBytes(syms)
-            if (data_string[:18] != "hello world its me"): 
-                print("fail")
-                plt.scatter(np.real(syms), np.imag(syms))
-                plt.xlim((-6, 6))
-                plt.ylim((-6, 6))
-                plt.show()
-            print(data_string)
-            write_file.write(data_string)
-            write_file.flush()
+            data_string = turboDecode(syms[:packet_useful_syms+1], packet_user_bytes, bits_per_sym)
+            #data_string = dataSymsToBytes(syms)
+            total_count += 1
+            if (data_string == None): 
+                #print("fail")
+                #plt.scatter(np.real(syms), np.imag(syms))
+                #plt.xlim((-6, 6))
+                #plt.ylim((-6, 6))
+                #plt.show()
+                pass
+            else:
+                good_count += 1
+                print(data_string[50:60])
+                write_file.write(data_string)
+                write_file.flush()
+            plt.scatter(np.real(syms), np.imag(syms))
+            plt.xlim((-6, 6))
+            plt.ylim((-6, 6))
+            plt.show()
+
+            print("PER: %.3f, PER 100: %.3f" % ((1 - good_count/float(total_count)), 1 - float(good_count/100.0)))
+            sys.stdout.flush()
             packet_samps_count = 0
             rx_state = MODE_WAIT
 
@@ -147,6 +162,8 @@ def processSample(s):
 #x = np.fromfile("samps.bin", dtype=np.complex64)
 #for samp in x:
 #    processSample(samp)
+
+turboInit()
 
 read_pipe = 'phy_rx_in'
 write_pipe = 'phy_rx_out'
@@ -174,3 +191,5 @@ while True:
             if len(data) == 0:
                 print("Writer closed")
                 break
+
+turboKill()

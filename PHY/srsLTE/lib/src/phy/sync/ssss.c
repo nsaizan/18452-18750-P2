@@ -25,9 +25,11 @@
 #include <string.h>
 #include <strings.h>
 
+#include "srslte/phy/sync/gen_sss.h"
+#include "srslte/phy/sync/sss.h"
 #include "srslte/phy/sync/ssss.h"
 
-#include "gen_sss.c"
+//#include "gen_sss.c"
 #include "srslte/config.h"
 #include "srslte/phy/dft/ofdm.h"
 #include "srslte/phy/utils/vector.h"

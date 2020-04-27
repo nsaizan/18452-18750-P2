@@ -1,4 +1,6 @@
 import numpy as np
+import ctypes
+import array
 
 qam64_syms = [3/np.sqrt(42) + 1j*3/np.sqrt(42),
               3/np.sqrt(42) + 1j*1/np.sqrt(42),
@@ -103,6 +105,56 @@ def generateZCSequence(l):
         pn.append(np.exp(-1j*np.pi*u*n*(n+np.mod(nzc, 2))/nzc))
     return pn
 
+turbolib = ctypes.CDLL('libsrslte_phy.so')
+# make srslte_phy
+
+def turboInit():
+    turbolib.local_turbo_init()
+
+def turboEncode(data, rate, mod):
+    data_bits = len(data) * 8
+    nof_re = int(np.round(data_bits / mod * rate))
+    print(nof_re)
+
+    if (mod == 2): srs_mod = 1
+
+    bytestr = bytes(bytearray(data))
+    in_ptr = ctypes.cast(bytestr, ctypes.POINTER(ctypes.c_uint8))
+
+    temp_arr = [0] * int(nof_re) * 2
+    syms = array.array('f', temp_arr)
+    addr, size = syms.buffer_info()
+    out_ptr = (ctypes.c_uint8 * size).from_address(addr)
+
+    turbolib.local_turbo_encode(nof_re, srs_mod, len(data), in_ptr, out_ptr)
+
+    real = np.take(syms, [i*2 for i in range(len(syms)/2)])
+    imag = np.take(syms, [i*2+1 for i in range(len(syms)/2)])
+
+    return np.array(real+imag*1j)
+
+def turboDecode(syms, data_len, mod):
+    nof_re = len(syms)
+    average_mag = np.average(np.abs(syms))
+    syms = np.multiply(syms, np.sqrt(2)/average_mag)
+
+    if (mod == 2): srs_mod = 1
+
+    temp_arr = [0] * data_len
+    data = array.array('B', temp_arr)
+    addr, size = data.buffer_info()
+    out_ptr = (ctypes.c_uint8 * size).from_address(addr)
+
+    bytestr = np.array(syms, dtype=np.complex64).tobytes()
+    in_ptr = ctypes.cast(bytestr, ctypes.POINTER(ctypes.c_uint8))
+
+    result = turbolib.local_turbo_decode(nof_re, srs_mod, data_len, out_ptr, in_ptr)
+
+    return bytearray(data) if result == 1 else None
+
+def turboKill():
+    turbolib.local_turbo_end()
+    
 shortZC = generateZCSequence(fft_size / 4)
 longZC = generateZCSequence(fft_size)
 longZC_conj = np.conjugate(longZC)
@@ -110,9 +162,11 @@ shortZC_conj = np.conjugate(shortZC)
 preamble_samps = longZC + 4 * shortZC
 longZC_thresh = fft_size * 0.65
 
-packet_user_bytes = 64
+packet_user_bytes = 63
 packet_user_bits = packet_user_bytes*8
-packet_len_bits = packet_user_bits *2 #64 bytes doubled for redundancy
+packet_turbo_rate = 2
+packet_len_bits = packet_user_bits * packet_turbo_rate
+packet_useful_syms = packet_len_bits / bits_per_sym
 num_fft_slices =  int(np.ceil(float(packet_len_bits)/bits_per_sym/data_sym_per_slice))
 packet_len_samps = int(len(preamble_samps) + num_fft_slices * (fft_size + cp_samples))
 
