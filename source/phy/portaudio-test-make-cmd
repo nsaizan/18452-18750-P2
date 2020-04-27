@@ -1,0 +1,2 @@
+gcc portaudio-test.c -o portaudio-test -L. -lportaudio -I ../../library/portaudio/include/ -lm -lpthread -lasound
+
