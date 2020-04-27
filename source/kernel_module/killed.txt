@@ -1,0 +1,47 @@
+[  272.236937] IPOA device initialized
+[  272.236941] IPOA register start
+[  272.236960] BUG: unable to handle kernel paging request at ffffffffffffffff
+[  272.237009] IP: [<ffffffffffffffff>] 0xffffffffffffffff
+[  272.237042] PGD 2e0f067 PUD 2e11067 PMD 0 
+[  272.237073] Oops: 0010 [#1] SMP 
+[  272.237097] Modules linked in: ipoa_mod(POE+) nfnetlink_queue nfnetlink_log nfnetlink drbg ansi_cprng ctr ccm ip6table_filter ip6_tables iptable_filter ip_tables x_tables bnep binfmt_misc arc4 snd_hda_codec_hdmi snd_hda_codec_realtek snd_hda_codec_generic intel_rapl x86_pkg_temp_thermal intel_powerclamp coretemp kvm_intel iwlmvm kvm mac80211 irqbypass crct10dif_pclmul crc32_pclmul ghash_clmulni_intel snd_soc_skl snd_soc_skl_ipc snd_hda_ext_core snd_soc_sst_ipc snd_soc_sst_dsp snd_soc_core uvcvideo aesni_intel videobuf2_vmalloc snd_compress videobuf2_memops ac97_bus videobuf2_v4l2 snd_pcm_dmaengine dw_dmac_core videobuf2_core aes_x86_64 lrw v4l2_common gf128mul glue_helper ablk_helper cryptd iwlwifi snd_hda_intel btusb btrtl btbcm btintel videodev snd_hda_codec media bluetooth cfg80211 snd_hda_core
+[  272.237615]  snd_hwdep joydev input_leds snd_pcm serio_raw ecdh_generic rtsx_pci_ms memstick thinkpad_acpi mei_me mei nvram snd_seq_midi snd_seq_midi_event shpchp snd_rawmidi snd_seq snd_seq_device snd_timer snd soundcore mac_hid parport_pc ppdev lp parport autofs4 mmc_block rtsx_pci_sdmmc i915_bpo intel_ips i2c_algo_bit drm_kms_helper syscopyarea e1000e psmouse sysfillrect sysimgblt ptp fb_sys_fops pps_core rtsx_pci drm ahci libahci wmi video fjes
+[  272.237934] CPU: 1 PID: 4010 Comm: insmod Tainted: P           OE   4.4.0-176-generic #206-Ubuntu
+[  272.237988] Hardware name: LENOVO 20F9CTO1WW/20F9CTO1WW, BIOS N1CET75W (1.43 ) 04/19/2019
+[  272.238036] task: ffff8804f2ee5a00 ti: ffff8805043b8000 task.ti: ffff8805043b8000
+[  272.238078] RIP: 0010:[<ffffffffffffffff>]  [<ffffffffffffffff>] 0xffffffffffffffff
+[  272.238127] RSP: 0018:ffff8805043bbc28  EFLAGS: 00010286
+[  272.238157] RAX: ffffffffffffffff RBX: ffff8800a189d000 RCX: 0000000000000000
+[  272.238192] RDX: ffff880528886800 RSI: 00000000ffffffff RDI: ffff8800a189d000
+[  272.238234] RBP: ffff8805043bbc58 R08: 000000000000000a R09: 0000000000000092
+[  272.238274] R10: ffff8804e93f7180 R11: 000000000000038f R12: 0000000000000000
+[  272.238314] R13: ffffffff81efb640 R14: ffffffffc0760170 R15: ffff8804b60a3d80
+[  272.238358] FS:  00007f72fa656700(0000) GS:ffff880541440000(0000) knlGS:0000000000000000
+[  272.238407] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  272.238444] CR2: ffffffffffffffff CR3: 00000004b2b3c000 CR4: 0000000000360670
+[  272.238488] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[  272.238531] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[  272.238574] Stack:
+[  272.238589]  ffffffff81759e37 306e5ee713fcd1e7 306e5ee713fcd1e7 ffff8800a189d000
+[  272.238644]  ffff8804b28a8a20 0000000000000000 ffff8805043bbc70 ffffffff8175a24a
+[  272.238697]  ffffffff81e13080 ffff8805043bbc88 ffffffffc07601bf ffffffff81e13080
+[  272.238757] Call Trace:
+[  272.238778]  [<ffffffff81759e37>] ? register_netdevice+0x97/0x490
+[  272.238818]  [<ffffffff8175a24a>] register_netdev+0x1a/0x30
+[  272.238859]  [<ffffffffc07601bf>] init_module+0x4f/0x80 [ipoa_mod]
+[  272.238900]  [<ffffffff810021f5>] do_one_initcall+0xb5/0x200
+[  272.238937]  [<ffffffff811de5aa>] ? __vunmap+0x9a/0xf0
+[  272.238974]  [<ffffffff811fb8b5>] ? kmem_cache_alloc_trace+0x185/0x1f0
+[  272.239017]  [<ffffffff811fc49d>] ? kfree+0x13d/0x150
+[  272.239052]  [<ffffffff81199955>] do_init_module+0x5f/0x1cf
+[  272.239093]  [<ffffffff81113c8a>] load_module+0x16aa/0x1c50
+[  272.239127]  [<ffffffff81110180>] ? __symbol_put+0x60/0x60
+[  272.239163]  [<ffffffff812246d0>] ? kernel_read+0x50/0x80
+[  272.239197]  [<ffffffff81114474>] SYSC_finit_module+0xb4/0xe0
+[  272.239234]  [<ffffffff811144be>] SyS_finit_module+0xe/0x10
+[  272.239271]  [<ffffffff8186739b>] entry_SYSCALL_64_fastpath+0x22/0xcb
+[  272.239306] Code:  Bad RIP value.
+[  272.239335] RIP  [<ffffffffffffffff>] 0xffffffffffffffff
+[  272.239368]  RSP <ffff8805043bbc28>
+[  272.239388] CR2: ffffffffffffffff
+[  272.249233] ---[ end trace 0135fff0d1c84fff ]---

@@ -1,0 +1,17 @@
+Install things (I dont remember if there was more)
+    sudo apt install build-essential linux-headers-`uname -r`
+
+build with 
+    sudo make
+
+install module with
+    sudo insmod ipoa_mod.ko
+
+remove with
+    sudo rmmod ipoa_mod.ko
+
+set device status with
+    sudo ifconfig IPOA (up/down)
+
+see debug messages with
+    dmesg

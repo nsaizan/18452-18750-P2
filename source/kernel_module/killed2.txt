@@ -1,0 +1,56 @@
+[   88.624603] ipoa_mod: loading out-of-tree module taints kernel.
+[   88.624607] ipoa_mod: module license 'don't @ me' taints kernel.
+[   88.624608] Disabling lock debugging due to kernel taint
+[   88.624661] ipoa_mod: module verification failed: signature and/or required key missing - tainting kernel
+[   88.624839] IPOA device initialized
+[   88.624841] IPOA register start
+[   88.624843] IPOA device inner initialized
+[   88.624948] BUG: unable to handle kernel NULL pointer dereference at 0000000000000010
+[   88.624994] IP: [<0000000000000010>] 0x10
+[   88.625017] PGD 0 
+[   88.625031] Oops: 0010 [#1] SMP 
+[   88.625051] Modules linked in: ipoa_mod(POE+) nfnetlink_queue nfnetlink_log nfnetlink drbg ansi_cprng ctr ccm ip6table_filter ip6_tables iptable_filter ip_tables x_tables bnep binfmt_misc snd_hda_codec_hdmi arc4 snd_hda_codec_realtek snd_hda_codec_generic intel_rapl x86_pkg_temp_thermal intel_powerclamp coretemp kvm_intel kvm snd_soc_skl irqbypass snd_soc_skl_ipc iwlmvm snd_hda_ext_core crct10dif_pclmul snd_soc_sst_ipc snd_soc_sst_dsp crc32_pclmul mac80211 snd_soc_core ghash_clmulni_intel snd_compress ac97_bus snd_pcm_dmaengine aesni_intel dw_dmac_core snd_hda_intel snd_hda_codec aes_x86_64 lrw gf128mul snd_hda_core glue_helper uvcvideo snd_hwdep ablk_helper cryptd videobuf2_vmalloc videobuf2_memops videobuf2_v4l2 videobuf2_core v4l2_common snd_pcm videodev media joydev input_leds serio_raw iwlwifi
+[   88.625530]  btusb cfg80211 btrtl btbcm btintel bluetooth rtsx_pci_ms memstick thinkpad_acpi ecdh_generic nvram mei_me mei snd_seq_midi snd_seq_midi_event snd_rawmidi shpchp snd_seq snd_seq_device snd_timer snd soundcore mac_hid parport_pc ppdev lp parport autofs4 mmc_block rtsx_pci_sdmmc i915_bpo intel_ips i2c_algo_bit drm_kms_helper psmouse e1000e syscopyarea sysfillrect sysimgblt ptp fb_sys_fops pps_core drm ahci rtsx_pci libahci wmi video fjes
+[   88.625846] CPU: 3 PID: 3802 Comm: insmod Tainted: P           OE   4.4.0-176-generic #206-Ubuntu
+[   88.625891] Hardware name: LENOVO 20F9CTO1WW/20F9CTO1WW, BIOS N1CET75W (1.43 ) 04/19/2019
+[   88.625935] task: ffff8804ef908000 ti: ffff8805233f4000 task.ti: ffff8805233f4000
+[   88.625974] RIP: 0010:[<0000000000000010>]  [<0000000000000010>] 0x10
+[   88.626012] RSP: 0018:ffff8805233f7b98  EFLAGS: 00010202
+[   88.626039] RAX: 0000000000000010 RBX: ffff880523dfc000 RCX: 00000000000fb59a
+[   88.626074] RDX: 0000000000000000 RSI: 0000000000004800 RDI: ffff880523dfc000
+[   88.626111] RBP: ffff8805233f7c20 R08: 0000000000019680 R09: ffffffff81410cd1
+[   88.626147] R10: ffffea0014986200 R11: 0000000000000000 R12: 0000000000000000
+[   88.626186] R13: 0000000000004800 R14: ffffffffc0843170 R15: ffff8804b2ca2180
+[   88.626236] FS:  00007f62e8dd2700(0000) GS:ffff8805414c0000(0000) knlGS:0000000000000000
+[   88.626276] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[   88.626306] CR2: 0000000000000010 CR3: 00000004be5e0000 CR4: 0000000000360670
+[   88.626342] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[   88.626378] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[   88.626417] Stack:
+[   88.626432]  ffffffff817594a8 ffff880523dfc4a8 ffff8805233f7be0 ffffffff81586558
+[   88.626481]  ffff880523dfc000 0000000000000000 ffff880523dfc4a8 ffff880523dfc000
+[   88.626526]  0000000800004800 0000000000004800 ffffffff81773c81 a3498d3b60ecc31a
+[   88.626572] Call Trace:
+[   88.626590]  [<ffffffff817594a8>] ? __netdev_update_features+0x78/0x780
+[   88.626635]  [<ffffffff81586558>] ? pm_runtime_set_memalloc_noio+0xa8/0xe0
+[   88.626674]  [<ffffffff81773c81>] ? netdev_register_kobject+0x151/0x180
+[   88.626710]  [<ffffffffc0843170>] ? ipoa_init+0xa0/0xa0 [ipoa_mod]
+[   88.626743]  [<ffffffff8175a095>] register_netdevice+0x2f5/0x490
+[   88.626776]  [<ffffffff8175a24a>] register_netdev+0x1a/0x30
+[   88.626806]  [<ffffffffc08431c2>] init_module+0x52/0x80 [ipoa_mod]
+[   88.626841]  [<ffffffff810021f5>] do_one_initcall+0xb5/0x200
+[   88.626872]  [<ffffffff811de5aa>] ? __vunmap+0x9a/0xf0
+[   88.626899]  [<ffffffff811fb8b5>] ? kmem_cache_alloc_trace+0x185/0x1f0
+[   88.626931]  [<ffffffff811fc49d>] ? kfree+0x13d/0x150
+[   88.626958]  [<ffffffff81199955>] do_init_module+0x5f/0x1cf
+[   88.626990]  [<ffffffff81113c8a>] load_module+0x16aa/0x1c50
+[   88.627016]  [<ffffffff81110180>] ? __symbol_put+0x60/0x60
+[   88.627044]  [<ffffffff812246d0>] ? kernel_read+0x50/0x80
+[   88.627073]  [<ffffffff81114474>] SYSC_finit_module+0xb4/0xe0
+[   88.627102]  [<ffffffff811144be>] SyS_finit_module+0xe/0x10
+[   88.627128]  [<ffffffff8186739b>] entry_SYSCALL_64_fastpath+0x22/0xcb
+[   88.627157] Code:  Bad RIP value.
+[   88.627181] RIP  [<0000000000000010>] 0x10
+[   88.627203]  RSP <ffff8805233f7b98>
+[   88.627218] CR2: 0000000000000010
+[   88.636349] ---[ end trace 9d03eddf9d20eb1f ]---

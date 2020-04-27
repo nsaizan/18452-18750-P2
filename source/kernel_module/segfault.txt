@@ -1,0 +1,47 @@
+[  973.948570] ipoa_mod: loading out-of-tree module taints kernel.
+[  973.948586] ipoa_mod: module license 'don't @ me' taints kernel.
+[  973.948593] Disabling lock debugging due to kernel taint
+[  973.948808] ipoa_mod: module verification failed: signature and/or required key missing - tainting kernel
+[  973.950453] IPOA device initialized
+[  973.950517] ------------[ cut here ]------------
+[  973.950648] kernel BUG at /build/linux-pxkyKy/linux-4.4.0/net/core/dev.c:6748!
+[  973.950833] invalid opcode: 0000 [#1] SMP 
+[  973.950961] Modules linked in: ipoa_mod(POE+) drbg ansi_cprng ctr ccm nfnetlink_queue nfnetlink_log nfnetlink ip6table_filter ip6_tables iptable_filter ip_tables x_tables bnep binfmt_misc arc4 snd_hda_codec_hdmi intel_rapl x86_pkg_temp_thermal snd_hda_codec_realtek intel_powerclamp coretemp iwlmvm snd_hda_codec_generic kvm_intel mac80211 kvm snd_soc_skl irqbypass snd_soc_skl_ipc crct10dif_pclmul snd_hda_ext_core crc32_pclmul snd_soc_sst_ipc snd_soc_sst_dsp ghash_clmulni_intel snd_soc_core snd_compress ac97_bus snd_pcm_dmaengine aesni_intel dw_dmac_core snd_hda_intel snd_hda_codec aes_x86_64 lrw gf128mul snd_hda_core uvcvideo snd_hwdep videobuf2_vmalloc glue_helper videobuf2_memops iwlwifi ablk_helper videobuf2_v4l2 cryptd videobuf2_core v4l2_common videodev media snd_pcm joydev input_leds cfg80211
+[  973.953181]  btusb serio_raw btrtl btbcm btintel bluetooth rtsx_pci_ms memstick ecdh_generic thinkpad_acpi nvram mei_me mei snd_seq_midi shpchp snd_seq_midi_event snd_rawmidi snd_seq snd_seq_device snd_timer snd soundcore mac_hid parport_pc ppdev lp parport autofs4 mmc_block rtsx_pci_sdmmc i915_bpo intel_ips i2c_algo_bit psmouse e1000e drm_kms_helper syscopyarea ptp sysfillrect pps_core sysimgblt fb_sys_fops rtsx_pci ahci drm libahci wmi video fjes
+[  973.954504] CPU: 2 PID: 5008 Comm: insmod Tainted: P           OE   4.4.0-176-generic #206-Ubuntu
+[  973.954732] Hardware name: LENOVO 20F9CTO1WW/20F9CTO1WW, BIOS N1CET75W (1.43 ) 04/19/2019
+[  973.954936] task: ffff8804e8df0f00 ti: ffff880435a30000 task.ti: ffff880435a30000
+[  973.955064] RIP: 0010:[<ffffffff81759ff4>]  [<ffffffff81759ff4>] register_netdevice+0x254/0x490
+[  973.955203] RSP: 0018:ffff880435a33c30  EFLAGS: 00010246
+[  973.955282] RAX: 0000000000000000 RBX: ffffffffc0928380 RCX: 0000000000000000
+[  973.955386] RDX: 0000000080000000 RSI: 0000000000000000 RDI: ffffffffc0928380
+[  973.955488] RBP: ffff880435a33c58 R08: 000000000000000a R09: 0000000000000096
+[  973.955589] R10: ffffea00026b8640 R11: 000000000000038f R12: ffff88009ae192c0
+[  973.955692] R13: 0000000000000000 R14: ffffffffc0926140 R15: ffff8804764ef7e0
+[  973.955829] FS:  00007fc002fc3700(0000) GS:ffff880541480000(0000) knlGS:0000000000000000
+[  973.955945] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  973.956029] CR2: 00007f0d0a944000 CR3: 0000000435a28000 CR4: 0000000000360670
+[  973.956132] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[  973.956237] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[  973.956336] Stack:
+[  973.956371]  0000000000000000 e8aa178f7222cd65 ffffffffc0928380 ffff88009ae192c0
+[  973.956497]  0000000000000000 ffff880435a33c70 ffffffff8175a24a ffffffff81e13080
+[  973.956621]  ffff880435a33c88 ffffffffc0926173 ffffffff81e13080 ffff880435a33d08
+[  973.956747] Call Trace:
+[  973.956798]  [<ffffffff8175a24a>] register_netdev+0x1a/0x30
+[  973.956887]  [<ffffffffc0926173>] init_module+0x33/0x50 [ipoa_mod]
+[  973.956982]  [<ffffffff810021f5>] do_one_initcall+0xb5/0x200
+[  973.957071]  [<ffffffff811de5aa>] ? __vunmap+0x9a/0xf0
+[  973.957152]  [<ffffffff811fb8b5>] ? kmem_cache_alloc_trace+0x185/0x1f0
+[  973.957249]  [<ffffffff811fc49d>] ? kfree+0x13d/0x150
+[  973.957330]  [<ffffffff81199955>] do_init_module+0x5f/0x1cf
+[  973.957432]  [<ffffffff81113c8a>] load_module+0x16aa/0x1c50
+[  973.957519]  [<ffffffff81110180>] ? __symbol_put+0x60/0x60
+[  973.957612]  [<ffffffff812246d0>] ? kernel_read+0x50/0x80
+[  973.957703]  [<ffffffff81114474>] SYSC_finit_module+0xb4/0xe0
+[  973.957794]  [<ffffffff811144be>] SyS_finit_module+0xe/0x10
+[  973.957883]  [<ffffffff8186739b>] entry_SYSCALL_64_fastpath+0x22/0xcb
+[  973.957976] Code: 00 00 e9 fa fe ff ff 0f 0b ba 56 1a 00 00 48 c7 c6 10 ab d7 81 48 c7 c7 50 a9 d7 81 e8 bc f4 a3 ff e8 ff 32 cb ff e9 f2 fd ff ff <0f> 0b 49 c7 c5 cd ee cf 81 80 3b 00 49 c7 c4 68 b5 d0 81 74 14 
+[  973.958599] RIP  [<ffffffff81759ff4>] register_netdevice+0x254/0x490
+[  973.958700]  RSP <ffff880435a33c30>
+[  973.981559] ---[ end trace 79bcc8594b51980a ]---
