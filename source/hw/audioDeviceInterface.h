@@ -13,10 +13,6 @@
 #define FRAMES_PER_BUFFER (1)
 #define SAMPLE_SILENCE (0)
 
-/* Queue Implementation for Audio In/Out Streams */
-
-//TODO
-
 /* User Data Interface Structure*/
 typedef struct {
 	queue_t in;

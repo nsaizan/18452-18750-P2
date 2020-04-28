@@ -21,7 +21,7 @@
 
 /* Number of new audio samples per filter call 
  * Must be less than MAX_INPUT_LEN */
-#define SAMPLES  80
+#define SAMPLES  1
 
 /* Length of the fir filter 
  * Must be less than MAX_FLT_LEN */

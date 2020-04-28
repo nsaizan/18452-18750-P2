@@ -10,10 +10,10 @@
 #define M_PI (3.14159265)
 #endif
 
-#define ITERATIONS (2)
+#define ITERATIONS (100)
 #define DURATION (SAMPLES * ITERATIONS)
 
-#define RAW_OUTPUT 1
+#define RAW_OUTPUT 0
 #define NOISE_AMP 0.5
 
 int main(){
@@ -38,6 +38,7 @@ int main(){
 
 	/* display test info */
 	if(!RAW_OUTPUT){
+		printf("SAMPLES = %d, ITERATIONS = %d\n",SAMPLES,ITERATIONS);
 		printf("=========================================\n");
 		printf("Testing IQ modulation and demodulation\n");
 		printf("*This is WITH lpf to remove aliasing*\n");

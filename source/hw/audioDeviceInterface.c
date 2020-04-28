@@ -40,6 +40,7 @@ static int paOutputStreamCallback(const void *inputBuffer, void *outputBuffer,
 	} else {
         	*out = queue_pop(&out_queue);
 	}
+	//printf("%fi\n",*out);
     
 	return paContinue;
 }
@@ -101,6 +102,8 @@ void displayAudioDevices(){
 }
 
 int InitializeAudioInterface(void){
+	printf("sample rate %d\n", SAMPLE_RATE);
+	
 	/* setup buffers between portaudio and higher level software */
 	queue_init(&out_queue);
 	queue_init(&in_queue);
@@ -168,7 +171,6 @@ int InitializeAudioInterface(void){
 		fprintf(stderr,"Error: Failed to open input stream.\n"); 
 		goto error;
 	}
-	printf("sample rate %d", SAMPLE_RATE);
 
 	err = Pa_SetStreamFinishedCallback( stream_out, &StreamFinished );
 	if( err != paNoError ) goto error;
