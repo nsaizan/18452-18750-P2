@@ -40,7 +40,7 @@ def fixWithReferenceSymbols(syms):
     refs = np.take(syms, ref_sym_indexes)
     #print("Pre: %r" % np.diff(np.unwrap(np.angle(refs))))
     rad_per_sym = np.average(np.diff(np.unwrap(np.angle(refs)))) / ref_sym_spacing
-    unshift = np.multiply(syms, np.exp(np.linspace(0,fft_size-1,fft_size)*1j*-rad_per_sym))
+    unshift = np.multiply(syms, np.exp(np.linspace(0,used_fft_size-1,used_fft_size)*1j*-rad_per_sym))
     refs = np.take(unshift, ref_sym_indexes)
     #print("Post: %r" %np.diff(np.unwrap(np.angle(refs))))
 
@@ -49,16 +49,16 @@ def fixWithReferenceSymbols(syms):
     return np.multiply(unshift, np.exp(1j*(desired_ang-cur_ang)))
 
 def OFDMtoSymbols(time_syms):
-    symbols = np.fft.fft(time_syms)
-    return symbols
+    symbols = fft(time_syms)
+    return symbols[fft_deadzone:-fft_deadzone]
 
 def getDataSymbols(packet_samps):
     all_data_syms = []
     start_samp = len(preamble_samps)
     print("%d %d" %(len(preamble_samps), len(packet_samps)))
     for i in range(num_fft_slices):
-        start = start_samp + i*(fft_size+cp_samples) + 4 # Not quite perfect sampling
-        end = start + 32
+        start = start_samp + i*(fft_size+cp_samples) + cp_samples - 1 # Not quite perfect sampling
+        end = start + fft_size
         fft_slice = packet_samps[start:end]
         syms = OFDMtoSymbols(fft_slice)
         fixed_syms = fixWithReferenceSymbols(syms)
@@ -108,8 +108,9 @@ def decodePacket():
 
 total_count = 0
 good_count = 0
+peaks = []
 def processSample(s):
-    global rx_state, packet_samps_count, total_count, good_count
+    global rx_state, packet_samps_count, total_count, good_count, peaks
     if rx_state == MODE_WAIT:
         cazac_buffer.append(s)
         
@@ -118,8 +119,12 @@ def processSample(s):
 
         peak = newLongSyncPeak()
         packet_found = testPeak(peak)
+        peaks.append(peak)
 
         if packet_found:
+            plt.plot(np.abs(peaks))
+            plt.show()
+            print(len(peaks))
             # Prepopulate with longZC samples
             np.place(packet_samps,
                 [True]*len(cazac_buffer) + [False]*(len(packet_samps)-len(cazac_buffer)),
@@ -151,9 +156,9 @@ def processSample(s):
                 print(data_string[50:60])
                 write_file.write(data_string)
                 write_file.flush()
-            plt.scatter(np.real(syms[:20]), np.imag(syms[:20]))
-            plt.xlim((-.1, .1))
-            plt.ylim((-.1, .1))
+            plt.scatter(np.real(syms[:]), np.imag(syms[:]))
+            plt.xlim((-.5, .5))
+            plt.ylim((-.5, .5))
             plt.show()
 
             print("PER: %.3f, PER 100: %.3f" % ((1 - good_count/float(total_count)), 1 - float(good_count/100.0)))
@@ -168,8 +173,8 @@ def processSample(s):
 
 turboInit()
 
-read_pipe = 'phy_rx_in'
-write_pipe = 'phy_rx_out'
+read_pipe = '/tmp/phy_rx_in'
+write_pipe = '/tmp/phy_rx_out'
 
 try:
     os.mkfifo(read_pipe)
@@ -177,7 +182,11 @@ except OSError as oe:
     if oe.errno != errno.EEXIST:
         raise
 
+print("pas")
+
 write_file = open(write_pipe, mode="w")
+
+print("pas")
 
 byte_queue = collections.deque([], maxlen=8)
 while True:

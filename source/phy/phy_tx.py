@@ -27,7 +27,7 @@ def symbolsToOFDM(syms):
         ofdm_set = np.insert(ofdm_set, ref_sym_insertion, [ref_sym]*num_ref_sym)
 
         # Perform IFFT to get samples
-        ofdm_samps = np.fft.ifft(ofdm_set)
+        ofdm_samps = ifft(insertFFTDeadzone(ofdm_set))
 
         # Generate and append CP
         cp_pre = ofdm_samps[-cp_samples:]
@@ -46,7 +46,7 @@ def symbolsToOFDM(syms):
         all_samps[-cp_samples:] = trans
         all_samps.extend(x[cp_samples:])
 
-    return all_samps
+    return np.multiply(all_samps, np.ceil(np.log2(fft_size))*float(fft_size)/used_fft_size)
 
 # Generate set of symbols from bits
 def bitsToSymbols(b):
@@ -125,8 +125,8 @@ def sendFloatSamps(samps):
 
 turboInit()
 
-read_pipe = 'phy_tx_in'
-write_pipe = 'phy_tx_out'
+read_pipe = '/tmp/phy_tx_in'
+write_pipe = '/tmp/phy_tx_out'
 
 write_file = open(write_pipe, mode="w")
 
