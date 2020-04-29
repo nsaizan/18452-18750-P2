@@ -1,2 +1,0 @@
-gcc interface-test.c interface.c firFilter.c quadratureModulation.c audioDeviceInterface.c queue.c -o interface-test -L. -lportaudio -I ../../library/portaudio/include/ -lm -lpthread -lasound
-

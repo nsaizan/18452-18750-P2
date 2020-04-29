@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
@@ -8,7 +9,7 @@
 #include "firFilter.h"
 #include "interface.h"
 
-#define DECIMATE_FACTOR (12)
+#define DECIMATE_FACTOR (1) //(12)
 
 unsigned int decimate_counter;
 
@@ -18,15 +19,23 @@ unsigned int decimate_counter;
 
 /* initializes receive file */
 void file_rec_interface_init(void){
-        rec_fifo = "/../../phy_rx_in";
-        rec_fd = open(rec_fifo, O_WRONLY | O_CREAT);
+        rec_fifo = "/tmp/phy_rx_in";
+        rec_fd = open(rec_fifo, O_WRONLY);
+	if(rec_fd == -1){
+                printf("ERROR: failed to open inbound fifo\n");
+                exit(0);
+        }
         return;
 }
 
 /* initializes send file */
 void file_send_interface_init(void){
-        send_fifo = "/../../phy_tx_out";
-        send_fd = open(send_fifo, O_RDONLY | O_CREAT);
+        send_fifo = "/tmp/phy_tx_out";
+        send_fd = open(send_fifo, O_RDONLY);
+	if(send_fd == -1){
+                printf("ERROR: failed to open outbound fifo\n");
+                exit(0);
+        }
         return;
 }
 
@@ -91,19 +100,21 @@ void interface_deinit(void){
 /*********************************************
  *		DATA FLOW CALLS
  *********************************************/
-
+unsigned long z = 0;
 /* sends data from file to audio device */
 void file_interface_send(void){
 	/* get a float from file */
 	char file_data[sizeof(float)];
-	read(send_fd, file_data, sizeof(file_data));
-	printf("receive: %d%d%d%d\n",file_data[0],file_data[1],file_data[2],file_data[3]);
-
-	//TODO deal with when it doesn't give enough data
+	int cnt = 0;
+	while(cnt < 4){
+		cnt += read(send_fd, &file_data[cnt], 1);
+	}
+	printf("(%ld) receive: \t%d\t%d\t%d\t%d",z,file_data[0],file_data[1],file_data[2],file_data[3]);
+	z++;
 
 	/* convert data to a float */
-	float audio_out = (float) *file_data;
-	//printf("received: %f\n", audio_out);
+	float audio_out = ((float *) file_data)[0];
+	printf("\t\t%f\n", audio_out);
 
 	/* send to audio interface */
 	audio_send(audio_out);

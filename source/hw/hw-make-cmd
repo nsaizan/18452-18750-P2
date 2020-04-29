@@ -1,0 +1,2 @@
+gcc hw.c interface.c firFilter.c quadratureModulation.c audioDeviceInterface.c queue.c -o hw -L. -lportaudio -I ../../library/portaudio/include/ -lm -lpthread -lasound
+
