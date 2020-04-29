@@ -38,11 +38,14 @@ def extractShortRefs(samples, start_id):
 
 def fixWithReferenceSymbols(syms):
     refs = np.take(syms, ref_sym_indexes)
+    #print("Pre: %r" % np.diff(np.unwrap(np.angle(refs))))
     rad_per_sym = np.average(np.diff(np.unwrap(np.angle(refs)))) / ref_sym_spacing
     unshift = np.multiply(syms, np.exp(np.linspace(0,fft_size-1,fft_size)*1j*-rad_per_sym))
+    refs = np.take(unshift, ref_sym_indexes)
+    #print("Post: %r" %np.diff(np.unwrap(np.angle(refs))))
 
     desired_ang = np.angle(ref_sym)
-    cur_ang = np.angle(np.average(np.take(unshift, ref_sym_indexes)))
+    cur_ang = np.average(np.angle(refs))
     return np.multiply(unshift, np.exp(1j*(desired_ang-cur_ang)))
 
 def OFDMtoSymbols(time_syms):
@@ -54,7 +57,7 @@ def getDataSymbols(packet_samps):
     start_samp = len(preamble_samps)
     print("%d %d" %(len(preamble_samps), len(packet_samps)))
     for i in range(num_fft_slices):
-        start = start_samp + i*(fft_size+cp_samples) + 3 # Not quite perfect sampling
+        start = start_samp + i*(fft_size+cp_samples) + 4 # Not quite perfect sampling
         end = start + 32
         fft_slice = packet_samps[start:end]
         syms = OFDMtoSymbols(fft_slice)
@@ -148,9 +151,9 @@ def processSample(s):
                 print(data_string[50:60])
                 write_file.write(data_string)
                 write_file.flush()
-            plt.scatter(np.real(syms), np.imag(syms))
-            plt.xlim((-6, 6))
-            plt.ylim((-6, 6))
+            plt.scatter(np.real(syms[:20]), np.imag(syms[:20]))
+            plt.xlim((-.1, .1))
+            plt.ylim((-.1, .1))
             plt.show()
 
             print("PER: %.3f, PER 100: %.3f" % ((1 - good_count/float(total_count)), 1 - float(good_count/100.0)))
