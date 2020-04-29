@@ -81,8 +81,10 @@ qam4_syms = [np.exp(np.pi*5/4*1j), np.exp(np.pi*3/4*1j),
 
 qam2_syms = [np.exp(np.pi*5/4*1j), np.exp(np.pi*1/4*1j)]
 
-fft_size = 32
-bandwidth = 4e3
+fft_size = 48
+used_fft_size = 32
+fft_deadzone = (fft_size - used_fft_size) / 2
+bandwidth = 6e3
 bits_per_sym = 2 #QPSK
 subcarrier_width = bandwidth / fft_size
 symbol_rate = subcarrier_width
@@ -91,11 +93,18 @@ cp_samples = fft_size / 8
 real_samp_rate = 48e3
 
 num_ref_sym = 8
-ref_sym_spacing = fft_size / num_ref_sym
+ref_sym_spacing = used_fft_size / num_ref_sym
 ref_sym_insertion = [i * ref_sym_spacing - i for i in range(num_ref_sym)]
 ref_sym_indexes = [i * ref_sym_spacing for i in range(num_ref_sym)]
 ref_sym = 1 + 0j
-data_sym_per_slice = fft_size - num_ref_sym
+data_sym_per_slice = used_fft_size - num_ref_sym
+
+
+def fft(*args, **kwargs):
+    return np.fft.fftshift(np.fft.fft(*args, **kwargs))
+
+def ifft(*args, **kwargs):
+    return np.fft.ifft(np.fft.ifftshift(*args, **kwargs))
 
 def generateZCSequence(l):
     pn = list()
@@ -105,7 +114,7 @@ def generateZCSequence(l):
         pn.append(np.exp(-1j*np.pi*u*n*(n+np.mod(nzc, 2))/nzc))
     return pn
 
-turbolib = ctypes.CDLL('libsrslte_phy.so')
+turbolib = ctypes.CDLL('/home/griffin/Documents/wireless-class/18452-18750-P2/source/phy/libsrslte_phy.so')
 # make srslte_phy
 
 def turboInit():
@@ -154,13 +163,21 @@ def turboDecode(syms, data_len, mod):
 
 def turboKill():
     turbolib.local_turbo_end()
-    
-shortZC = generateZCSequence(fft_size / 4)
-longZC = generateZCSequence(fft_size)
+
+def insertFFTDeadzone(seq):
+    return np.concatenate(([0+0j]*fft_deadzone,seq,[0+0j]*fft_deadzone))
+
+def stripFFTDeadzone(seq):
+    return seq[fft_deadzone:-fft_deadzone]
+
+shortZC_raw = generateZCSequence(used_fft_size / 4)
+shortZC = ifft(insertFFTDeadzone(fft(shortZC_raw * 4)))[:fft_size/4]
+longZC_raw = generateZCSequence(used_fft_size)
+longZC = ifft(insertFFTDeadzone(fft(longZC_raw)))
 longZC_conj = np.conjugate(longZC)
 shortZC_conj = np.conjugate(shortZC)
-preamble_samps = longZC + 4 * shortZC
-longZC_thresh = fft_size * 0.65
+preamble_samps = np.multiply(np.concatenate((longZC,shortZC,shortZC,shortZC,shortZC)), float(fft_size)/used_fft_size)
+longZC_thresh = used_fft_size * 0.65
 
 packet_user_bytes = 63
 packet_user_bits = packet_user_bytes*8
