@@ -94,10 +94,10 @@ def decodePacket():
     r = extractShortRefs(packet_samps, 0)
     # Calculate a freqeuncy offset based on the differences between each phase
     freq_offset = np.average(np.diff(r)) / len(shortZC) / 2 / np.pi * bandwidth
-    #print("Found freq offset %.3f" % freq_offset)
+    print("Found freq offset %.3f" % freq_offset)
     # Correct for frequency offset
-    #freq_corr = shiftSamples(packet_samps, -freq_offset)
-    freq_corr = packet_samps
+    freq_corr = shiftSamples(packet_samps, -freq_offset)
+    #freq_corr = packet_samps
     # Find phase offset
     phase_offset = extractShortRefs(freq_corr, 0)[3]
     # Correct for phase offset
@@ -119,12 +119,12 @@ def processSample(s):
 
         peak = newLongSyncPeak()
         packet_found = testPeak(peak)
-        peaks.append(peak)
+        #peaks.append(peak)
 
         if packet_found:
-            plt.plot(np.abs(peaks))
-            plt.show()
-            print(len(peaks))
+            #plt.plot(np.abs(peaks))
+            #plt.show()
+            #print(len(peaks))
             # Prepopulate with longZC samples
             np.place(packet_samps,
                 [True]*len(cazac_buffer) + [False]*(len(packet_samps)-len(cazac_buffer)),
@@ -141,7 +141,7 @@ def processSample(s):
         # Have complete packet, now process it
         if packet_samps_count >= len(packet_samps):
             syms = decodePacket()
-            data_string = turboDecode(syms[:packet_useful_syms+1], packet_user_bytes, bits_per_sym)
+            data_string = turboDecode(syms[:packet_useful_syms], packet_user_bytes, bits_per_sym)
             #data_string = dataSymsToBytes(syms)
             total_count += 1
             if (data_string == None): 
@@ -156,10 +156,10 @@ def processSample(s):
                 print(data_string[50:60])
                 write_file.write(data_string)
                 write_file.flush()
-            plt.scatter(np.real(syms[:]), np.imag(syms[:]))
-            plt.xlim((-.5, .5))
-            plt.ylim((-.5, .5))
-            plt.show()
+            #plt.scatter(np.real(syms[:packet_useful_syms]), np.imag(syms[:packet_useful_syms]))
+            #plt.xlim((-2, 2))
+            #plt.ylim((-2, 2))
+            #plt.show()
 
             print("PER: %.3f, PER 100: %.3f" % ((1 - good_count/float(total_count)), 1 - float(good_count/100.0)))
             sys.stdout.flush()

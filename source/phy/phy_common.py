@@ -85,7 +85,7 @@ fft_size = 48
 used_fft_size = 32
 fft_deadzone = (fft_size - used_fft_size) / 2
 bandwidth = 6e3
-bits_per_sym = 2 #QPSK
+bits_per_sym = 4 #QPSK
 subcarrier_width = bandwidth / fft_size
 symbol_rate = subcarrier_width
 sampling_rate = bandwidth
@@ -126,6 +126,7 @@ def turboEncode(data, rate, mod):
     print(nof_re)
 
     if (mod == 2): srs_mod = 1
+    if (mod == 4): srs_mod = 2
 
     bytestr = bytes(bytearray(data))
     in_ptr = ctypes.cast(bytestr, ctypes.POINTER(ctypes.c_uint8))
@@ -148,6 +149,7 @@ def turboDecode(syms, data_len, mod):
     syms = np.multiply(syms, np.sqrt(2)/average_mag)
 
     if (mod == 2): srs_mod = 1
+    if (mod == 4): srs_mod = 2
 
     temp_arr = [0] * data_len
     data = array.array('B', temp_arr)
@@ -179,7 +181,7 @@ shortZC_conj = np.conjugate(shortZC)
 preamble_samps = np.multiply(np.concatenate((longZC,shortZC,shortZC,shortZC,shortZC)), float(fft_size)/used_fft_size)
 longZC_thresh = used_fft_size * 0.65
 
-packet_user_bytes = 63
+packet_user_bytes = 60
 packet_user_bits = packet_user_bytes*8
 packet_turbo_rate = 2
 packet_len_bits = packet_user_bits * packet_turbo_rate
