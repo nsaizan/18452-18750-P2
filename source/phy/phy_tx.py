@@ -3,6 +3,16 @@ import os
 import errno
 import collections
 
+def windowTransition(size, direction=True):
+    div = float(size + 1)
+    if direction:
+        return 0.5 * (1 + np.cos(np.linspace(1, size, size)*np.pi/div))
+    else:
+        return 1 - 0.5 * (1 + np.cos(np.linspace(1, size, size)*np.pi/div))
+
+pre_window = windowTransition(cp_samples, False)
+post_window = windowTransition(cp_samples, True)
+
 # Convert frequency-domain symbols to time-series samples
 def symbolsToOFDM(syms):
     symbol_sets = []
@@ -21,13 +31,20 @@ def symbolsToOFDM(syms):
 
         # Generate and append CP
         cp_pre = ofdm_samps[-cp_samples:]
-        ofdm_samps = np.concatenate((cp_pre,ofdm_samps))
+        cp_post = ofdm_samps[:cp_samples]
+        ofdm_samps = np.concatenate((cp_pre,ofdm_samps,cp_post))
 
         symbol_sets.append(ofdm_samps)
 
     all_samps = []
-    for x in symbol_sets:
-        all_samps.extend(x)
+    all_samps.extend(symbol_sets[0])
+    for x in symbol_sets[1:]:
+        pre = x[:cp_samples]
+        post = all_samps[-cp_samples:]
+        trans = (pre * pre_window) + (post * post_window)
+
+        all_samps[-cp_samples:] = trans
+        all_samps.extend(x[cp_samples:])
 
     return all_samps
 
