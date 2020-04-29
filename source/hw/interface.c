@@ -9,7 +9,7 @@
 #include "firFilter.h"
 #include "interface.h"
 
-#define DECIMATE_FACTOR (1) //(12)
+#define DECIMATE_FACTOR (12)
 
 unsigned int decimate_counter;
 

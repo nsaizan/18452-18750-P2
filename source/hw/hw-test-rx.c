@@ -43,7 +43,7 @@ int main(){
 		}
 		float val1 = ((float *) data)[0];
 		float val2 = ((float *) data)[1];
-		printf("(%ld) received: %f\t%f\n", count, val1, val2);
+		//printf("(%ld) received: \t%f\t\t%f\n", count, val1, val2);
 		count++;
 
 	}
