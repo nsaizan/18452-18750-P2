@@ -110,14 +110,25 @@ void file_interface_send(void){
 	/* get a float from file */
 	char file_data[sizeof(float)];
 	int cnt = 0;
+	int iterations = 0;
+	int limit = 4;
 	while(cnt < 4){
 		cnt += read(send_fd, &file_data[cnt], 1);
+		iterations++;
+		if(iterations >= limit && cnt == 0){
+			break;
+		}
 	}
 	//printf("(%ld) receive: \t%d\t%d\t%d\t%d",z,file_data[0],file_data[1],file_data[2],file_data[3]);
 	z++;
 
 	/* convert data to a float */
-	float audio_out = ((float *) file_data)[0];
+	float audio_out;
+	if(cnt == 0){
+		audio_out = 0;
+	} else {
+		audio_out = ((float *) file_data)[0];
+	}
 	//printf("\t\t%f\n", audio_out);
 
 	/* send to audio interface */
