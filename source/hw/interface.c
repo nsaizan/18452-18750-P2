@@ -20,22 +20,26 @@ unsigned int decimate_counter;
 /* initializes receive file */
 void file_rec_interface_init(void){
         rec_fifo = "/tmp/phy_rx_in";
+	printf("Opening the rx pipe...\n");
         rec_fd = open(rec_fifo, O_WRONLY);
 	if(rec_fd == -1){
                 printf("ERROR: failed to open inbound fifo\n");
                 exit(0);
         }
+	printf(" rx pipe opened!\n");
         return;
 }
 
 /* initializes send file */
 void file_send_interface_init(void){
         send_fifo = "/tmp/phy_tx_out";
+	printf("Opening the tx pipe...\n");
         send_fd = open(send_fifo, O_RDONLY);
 	if(send_fd == -1){
                 printf("ERROR: failed to open outbound fifo\n");
                 exit(0);
         }
+	printf(" tx pipe opened!\n");
         return;
 }
 

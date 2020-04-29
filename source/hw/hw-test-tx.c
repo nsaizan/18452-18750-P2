@@ -5,15 +5,17 @@
 #include <math.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "firFilter.h"
-#include "audioDeviceInterface.h"
+//#include "firFilter.h"
+//#include "audioDeviceInterface.h"
 #include "queue.h"
-#include "quadratureModulation.h"
-#include "interface.h"
+//#include "quadratureModulation.h"
+//#include "interface.h"
 
 #ifndef M_PI
 #define M_PI (3.14159265)
 #endif
+
+//#define SAMPLE_RATE = 48000
 
 int main(){
 	/* the fifo would be setup by phy */
@@ -21,20 +23,24 @@ int main(){
 	mkfifo(fifo, 0666);
 
 	/* setup some test data */
-	int f = 500;
+	int f = 400;
 	float sine[SAMPLE_RATE/f];
 	for(unsigned long i = 0; i < SAMPLE_RATE/f; i++){
 		sine[i] = sin(2* M_PI * f * i / SAMPLE_RATE);
 	}
 
 	/* open tx pipe */
+	printf("Test will now open the tx pipe\n");
+	printf("(the other end of the tx pipe must be opened to continue)\n");
+	fflush(stdout);
 	int fifo_fd = open(fifo, O_WRONLY);
 	if(fifo_fd == -1){
 		printf("Error: open failed\n");
 		exit(0);
 	}
 
-	printf("Test will begin output audio samples...\n");
+	printf("Successfully opened the tx pipe!\n");
+	printf("Test will begin outputting audio samples...\n");
 
 	/* constantly output data */
 	unsigned long i = 0;

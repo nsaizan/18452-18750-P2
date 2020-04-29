@@ -109,8 +109,6 @@ void displayAudioDevices(){
 }
 
 int InitializeAudioInterface(void){
-	printf("sample rate %d\n", SAMPLE_RATE);
-	
 	/* setup buffers between portaudio and higher level software */
 	queue_init(&out_queue);
 	queue_init(&in_queue);
@@ -127,27 +125,68 @@ int InitializeAudioInterface(void){
 	/* if you want to manually select an audio device use this */
 	displayAudioDevices();
 
-	/* select output audio device details */
-	outputParameters.device = Pa_GetDefaultOutputDevice();
-	if(outputParameters.device == paNoDevice){
-		fprintf(stderr,"Error: No default output device.\n"); 
+	/* allow the user to manually select audio devices */
+	int input_device_id = -2;
+	int output_device_id = -2;
+	int num_devices = Pa_GetDeviceCount();
+	if(num_devices < 0){
+		printf("Error: Pa_CountDevices returned 0x%x\n", num_devices);
 		goto error;
 	}
+	while(input_device_id == -2 || output_device_id == -2){
+		printf("Please give the device number for your desired audio devices\n");
+		printf("(If you are unsure '-1' will select the system default)\n");
+		printf("Input Device:");
+		scanf("%d",&input_device_id);
+		printf("\n");
+		printf("Output Device:");
+		scanf("%d",&output_device_id);
+		printf("\n");
+		if(input_device_id == -1){
+			input_device_id = Pa_GetDefaultInputDevice();
+			if(input_device_id == paNoDevice){
+				printf("Error: No default input device\n");
+				input_device_id = -2;
+			}
+		} else if(input_device_id > num_devices || input_device_id < -1){
+			printf("Error: Input Device ID is out of range\n");
+			input_device_id = -2;
+		}
+		if(output_device_id == -1){
+			output_device_id = Pa_GetDefaultOutputDevice();
+			if(output_device_id == paNoDevice){
+				printf("Error: No default output device\n");
+				output_device_id = -2;
+			}
+		} else if(output_device_id > num_devices || output_device_id < -1){
+			printf("Error: Output Device ID is out of range\n");
+			output_device_id = -2;
+		}
+		
+	}
+
+	
+	/* select output audio device details */
+	outputParameters.device = output_device_id;
 	outputParameters.channelCount = 1;
 	outputParameters.sampleFormat = paFloat32;
 	outputParameters.suggestedLatency = Pa_GetDeviceInfo(outputParameters.device)->defaultLowOutputLatency;
 	outputParameters.hostApiSpecificStreamInfo = NULL;
 	
 	/* select input audio device details */
-	inputParameters.device = Pa_GetDefaultInputDevice();
-	if(inputParameters.device == paNoDevice){
-		fprintf(stderr,"Error: No default input device.\n"); 
-		goto error;
-	}
+	inputParameters.device = input_device_id;
 	inputParameters.channelCount = 1;
 	inputParameters.sampleFormat = paFloat32;
 	inputParameters.suggestedLatency = Pa_GetDeviceInfo(inputParameters.device)->defaultLowInputLatency;
 	inputParameters.hostApiSpecificStreamInfo = NULL;
+
+	/* confirm that the SAMPLE_RATE is valid for the chosen devices */
+	err = Pa_IsFormatSupported(&inputParameters, &outputParameters, SAMPLE_RATE);
+	if(err == paFormatIsSupported){
+		printf("Device setup parameters accepted\n");
+	} else {
+		printf("Error: Device setup parameters are invalid!\n");
+	}	
 
 	/* open output stream */
 	err = Pa_OpenStream(
