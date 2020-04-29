@@ -38,13 +38,15 @@ int main(){
 
 	/* constantly output data */
 	unsigned long i = 0;
+	unsigned long z = 0;
 	while(1){	
 		char* bytes = (char *) (sine + i);
-		printf("(%ld) sending: \t%d\t%d\t%d\t%d\t\t%f\n",
-				i,bytes[0],bytes[1],bytes[3],bytes[4],sine[i]);
+		//printf("(%ld) sending: \t%d\t%d\t%d\t%d\t\t%f\n",
+		//		z,bytes[0],bytes[1],bytes[3],bytes[4],sine[i]);
 		write(fifo_fd, bytes, 4);
 		i++;
 		i%=SAMPLE_RATE/f;
+		z++;
 	}
 
 	return 0;

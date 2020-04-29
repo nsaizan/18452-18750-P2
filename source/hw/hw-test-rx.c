@@ -38,11 +38,12 @@ int main(){
 	while(1){
 		char data[sizeof(float)];
 		int cnt = 0;
-		while(cnt < 4){
-			cnt += read(send_fd, &data[cnt], 1);
+		while(cnt < 8){
+			cnt += read(fifo_fd, &data[cnt], 1);
 		}
-		float val = ((float *) data)[0];
-		printf("(%ld) received: %f", count, val);
+		float val1 = ((float *) data)[0];
+		float val2 = ((float *) data)[1];
+		printf("(%ld) received: %f\t%f\n", count, val1, val2);
 		count++;
 
 	}

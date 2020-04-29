@@ -10,13 +10,17 @@ void audio_flush_out(void){
 }
 
 void audio_send(float data){
-	while(queue_is_full(&out_queue));
+	while(queue_is_full(&out_queue)){
+		//printf("transmit q full!\n");	
+	}
 	queue_push(&out_queue, data);
 	return;
 }
 
 float audio_receive(void){
-	while(queue_is_empty(&in_queue));
+	while(queue_is_empty(&in_queue)){
+		//printf("receive q empty!\n");	
+	}
 	return queue_pop(&in_queue);
 }
 
@@ -60,7 +64,10 @@ static int paInputStreamCallback(const void *inputBuffer, void *outputBuffer,
     	(void) statusFlags;
     	(void) outputBuffer;
 
-	while(queue_is_full(&in_queue));
+	//printf("receiving\n");
+	while(queue_is_full(&in_queue)){
+		printf("receive q is full!\n");		
+	}
         queue_push(&in_queue, *in);
     
 	return paContinue;

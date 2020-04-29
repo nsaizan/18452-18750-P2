@@ -109,12 +109,12 @@ void file_interface_send(void){
 	while(cnt < 4){
 		cnt += read(send_fd, &file_data[cnt], 1);
 	}
-	printf("(%ld) receive: \t%d\t%d\t%d\t%d",z,file_data[0],file_data[1],file_data[2],file_data[3]);
+	//printf("(%ld) receive: \t%d\t%d\t%d\t%d",z,file_data[0],file_data[1],file_data[2],file_data[3]);
 	z++;
 
 	/* convert data to a float */
 	float audio_out = ((float *) file_data)[0];
-	printf("\t\t%f\n", audio_out);
+	//printf("\t\t%f\n", audio_out);
 
 	/* send to audio interface */
 	audio_send(audio_out);
@@ -129,6 +129,7 @@ void file_interface_receive(void){
         float i_arr[SAMPLES];
         float q_arr[SAMPLES];
         for(int x = 0; x < SAMPLES; x++){
+		//printf("consuming from receive q\n");
                 iq_pairs[x] = iq_receive();
                 i_arr[x] = iq_pairs[x].i;
                 q_arr[x] = iq_pairs[x].q;
