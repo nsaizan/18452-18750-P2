@@ -10,7 +10,7 @@
 #define M_PI (3.15159265)
 #endif
 
-#define IQ_CARRIER_FREQ (6000)
+#define IQ_CARRIER_FREQ (8000)
 #define WAVE_TABLE_SIZE (SAMPLE_RATE/IQ_CARRIER_FREQ)
 
 float iq_sine[WAVE_TABLE_SIZE];
