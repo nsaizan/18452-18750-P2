@@ -4,6 +4,7 @@ import os
 import errno
 import collections
 import sys
+import time
 
 cazac_buffer = collections.deque([], maxlen=len(longZC))
 packet_samps = np.empty_like([0]*packet_len_samps, dtype=np.complex64)
@@ -96,8 +97,8 @@ def decodePacket():
     freq_offset = np.average(np.diff(r)) / len(shortZC) / 2 / np.pi * bandwidth
     print("Found freq offset %.3f" % freq_offset)
     # Correct for frequency offset
-    freq_corr = shiftSamples(packet_samps, -freq_offset)
-    #freq_corr = packet_samps
+    #freq_corr = shiftSamples(packet_samps, -freq_offset)
+    freq_corr = packet_samps
     # Find phase offset
     phase_offset = extractShortRefs(freq_corr, 0)[3]
     # Correct for phase offset
@@ -109,8 +110,17 @@ def decodePacket():
 total_count = 0
 good_count = 0
 peaks = []
+t = time.time()
+tc = 0
 def processSample(s):
-    global rx_state, packet_samps_count, total_count, good_count, peaks
+    global rx_state, packet_samps_count, total_count, good_count, peaks, t, tc
+    tc += 1
+
+    if time.time() > t + 1.0:
+        print("Received samples: %d" % tc)
+        tc = 0
+        t = time.time()
+
     if rx_state == MODE_WAIT:
         cazac_buffer.append(s)
         
@@ -156,10 +166,12 @@ def processSample(s):
                 print(data_string[50:60])
                 write_file.write(data_string)
                 write_file.flush()
+            plt.plot(np.real(packet_samps))
+            plt.plot(np.imag(packet_samps))
             #plt.scatter(np.real(syms[:packet_useful_syms]), np.imag(syms[:packet_useful_syms]))
             #plt.xlim((-2, 2))
             #plt.ylim((-2, 2))
-            #plt.show()
+            plt.show()
 
             print("PER: %.3f, PER 100: %.3f" % ((1 - good_count/float(total_count)), 1 - float(good_count/100.0)))
             sys.stdout.flush()
@@ -172,6 +184,9 @@ def processSample(s):
 #    processSample(samp)
 
 turboInit()
+
+#while True:
+#    processSample(1+1j)
 
 read_pipe = '/tmp/phy_rx_in'
 write_pipe = '/tmp/phy_rx_out'

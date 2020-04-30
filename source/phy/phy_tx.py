@@ -2,6 +2,7 @@ from phy_common import *
 import os
 import errno
 import collections
+import scipy.signal as sig
 
 def windowTransition(size, direction=True):
     div = float(size + 1)
@@ -108,16 +109,31 @@ def encodeOFDMFrame(d):
     samps = symbolsToOFDM(syms)
     return samps
 
+def butter_lowpass(cutoff, fs, order=5):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = sig.butter(order, normal_cutoff, btype='low', analog=False)
+    return b, a
+
 # Generate real symbols from IQ data
 def generateRealSamps(data_bytes):
     data_symbols = turboEncode(data_bytes, packet_turbo_rate, bits_per_sym)
-    print(data_symbols)
+    #print(data_symbols)
     iq = symbolsToOFDM(data_symbols)
+    print("%d symbols for %d bytes" % (len(data_symbols), len(data_bytes)))
     iq = np.concatenate((preamble_samps, iq))
+    print(len(iq))
     interpolate = np.repeat(iq, int(real_samp_rate/bandwidth)) # x12 to get to 48khz
-    shift = shiftSamples(interpolate, 8000)
+    print(len(interpolate))
+
+    b, a = butter_lowpass(2500, real_samp_rate, order=10)
+    interpolate = sig.lfilter(b, a, interpolate)
+    np.save("iq_sig.npy", interpolate)
+
+    shift = shiftSamples(interpolate, 5000, sr=real_samp_rate)
     samps = np.real(shift)
-    samps = np.multiply(samps, 0.05) # Scale down for hardware
+    samps = np.multiply(samps, 0.005) # Scale down for hardware
+    samps.astype('float32').tofile("real_sig.bin")
     return samps
 
 def sendFloatSamps(samps):

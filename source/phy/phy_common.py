@@ -189,7 +189,7 @@ packet_useful_syms = packet_len_bits / bits_per_sym
 num_fft_slices =  int(np.ceil(float(packet_len_bits)/bits_per_sym/data_sym_per_slice))
 packet_len_samps = int(len(preamble_samps) + num_fft_slices * (fft_size + cp_samples))
 
-def shiftSamples(samps, freq, phase=0):
+def shiftSamples(samps, freq, phase=0, sr=sampling_rate):
     return np.multiply(samps, np.exp(
-        np.add(np.linspace(0,len(samps)-1,len(samps))*2*np.pi*1j*(float(freq)/sampling_rate),
+        np.add(np.linspace(0,len(samps)-1,len(samps))*2*np.pi*1j*(float(freq)/sr),
         phase)))
