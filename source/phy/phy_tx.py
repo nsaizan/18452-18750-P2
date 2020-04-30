@@ -111,17 +111,24 @@ def encodeOFDMFrame(d):
 # Generate real symbols from IQ data
 def generateRealSamps(data_bytes):
     data_symbols = turboEncode(data_bytes, packet_turbo_rate, bits_per_sym)
+    print(data_symbols)
     iq = symbolsToOFDM(data_symbols)
-    iq = np.concatenate(preamble_samps, iq)
+    iq = np.concatenate((preamble_samps, iq))
     interpolate = np.repeat(iq, int(real_samp_rate/bandwidth)) # x12 to get to 48khz
     shift = shiftSamples(interpolate, 8000)
     samps = np.real(shift)
+    samps = np.multiply(samps, 0.05) # Scale down for hardware
     return samps
 
 def sendFloatSamps(samps):
+    global write_file
     tx = np.array(samps, dtype=np.float32)
     btsr = tx.tobytes()
-    write_file.write(btsr)
+    try:
+        write_file.write(btsr)
+    except Exception as e:
+        print(e)
+        write_file = open(write_pipe, mode="w")
 
 turboInit()
 
@@ -136,10 +143,12 @@ while True:
     with open(read_pipe) as fifo:
         print("Read pipe opened")
         while True:
-            data = fifo.read(1)
+            data = fifo.read(packet_user_bytes)
+            print(len(byte_queue))
             for x in data:
                 byte_queue.append(x)
                 if len(byte_queue) == byte_queue.maxlen:
+                    print("Sent packet")
                     samps = generateRealSamps(byte_queue)
                     sendFloatSamps(samps)
                     byte_queue.clear()
