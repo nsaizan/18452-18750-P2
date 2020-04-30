@@ -85,7 +85,7 @@ fft_size = 48
 used_fft_size = 32
 fft_deadzone = (fft_size - used_fft_size) / 2
 bandwidth = 6e3
-bits_per_sym = 4 #QPSK
+bits_per_sym = 2 #QPSK
 subcarrier_width = bandwidth / fft_size
 symbol_rate = subcarrier_width
 sampling_rate = bandwidth
@@ -181,7 +181,7 @@ shortZC_conj = np.conjugate(shortZC)
 preamble_samps = np.multiply(np.concatenate((longZC,shortZC,shortZC,shortZC,shortZC)), float(fft_size)/used_fft_size)
 longZC_thresh = used_fft_size * 0.65
 
-packet_user_bytes = 60
+packet_user_bytes = 63
 packet_user_bits = packet_user_bytes*8
 packet_turbo_rate = 2
 packet_len_bits = packet_user_bits * packet_turbo_rate

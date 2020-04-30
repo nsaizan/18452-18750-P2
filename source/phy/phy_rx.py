@@ -37,16 +37,21 @@ def extractShortRefs(samples, start_id):
 
     return np.unwrap(np.angle(refs))
 
+last_freq = None
 def fixWithReferenceSymbols(syms):
+    global last_freq
     refs = np.take(syms, ref_sym_indexes)
     #print("Pre: %r" % np.diff(np.unwrap(np.angle(refs))))
     rad_per_sym = np.average(np.diff(np.unwrap(np.angle(refs)))) / ref_sym_spacing
-    unshift = np.multiply(syms, np.exp(np.linspace(0,used_fft_size-1,used_fft_size)*1j*-rad_per_sym))
+    if not last_freq: last_freq = rad_per_sym
+    else: last_freq = last_freq * 0.5 + rad_per_sym * 0.5
+
+    unshift = np.multiply(syms, np.exp(np.linspace(0,used_fft_size-1,used_fft_size)*1j*-last_freq))
     refs = np.take(unshift, ref_sym_indexes)
     #print("Post: %r" %np.diff(np.unwrap(np.angle(refs))))
 
     desired_ang = np.angle(ref_sym)
-    cur_ang = np.average(np.angle(refs))
+    cur_ang = np.angle(np.average(refs))
     return np.multiply(unshift, np.exp(1j*(desired_ang-cur_ang)))
 
 def OFDMtoSymbols(time_syms):
@@ -64,6 +69,17 @@ def getDataSymbols(packet_samps):
         syms = OFDMtoSymbols(fft_slice)
         fixed_syms = fixWithReferenceSymbols(syms)
         data_syms = np.delete(fixed_syms, ref_sym_indexes)
+
+        #hit = False
+        #for j in range(len(data_syms)):
+        #    dif = (np.angle(data_syms[j]) + np.pi + np.pi/4.0) % (np.pi/2.0) 
+        #    if dif < np.pi * .375 and dif > np.pi * .125:
+        #        print("error %d %d" % (i, j))
+        #        hit = True
+        #if hit:
+        #    print(fixed_syms)
+        #    fixed_syms = fixWithReferenceSymbols(syms)
+        
         all_data_syms.extend(data_syms)
     return all_data_syms
 
@@ -97,12 +113,18 @@ def decodePacket():
     freq_offset = np.average(np.diff(r)) / len(shortZC) / 2 / np.pi * bandwidth
     print("Found freq offset %.3f" % freq_offset)
     # Correct for frequency offset
-    #freq_corr = shiftSamples(packet_samps, -freq_offset)
-    freq_corr = packet_samps
+    freq_corr = shiftSamples(packet_samps, -freq_offset)
+    #freq_corr = packet_samps
     # Find phase offset
-    phase_offset = extractShortRefs(freq_corr, 0)[3]
+    phase_offset = np.average(extractShortRefs(freq_corr, 0))
+    print(phase_offset)
     # Correct for phase offset
     phase_corr = np.multiply(freq_corr, np.exp(-phase_offset*1j))
+    np.save("last_packet.npy", phase_corr)
+    
+    #plt.plot(np.real(phase_corr))
+    #plt.plot(np.imag(phase_corr))
+    #plt.show()
     # Get data symbols
     data_syms = getDataSymbols(phase_corr)
     return data_syms
@@ -150,6 +172,7 @@ def processSample(s):
 
         # Have complete packet, now process it
         if packet_samps_count >= len(packet_samps):
+            np.save("last_packet_raw.npy", packet_samps)
             syms = decodePacket()
             data_string = turboDecode(syms[:packet_useful_syms], packet_user_bytes, bits_per_sym)
             #data_string = dataSymsToBytes(syms)
@@ -166,12 +189,13 @@ def processSample(s):
                 print(data_string[50:60])
                 write_file.write(data_string)
                 write_file.flush()
-            plt.plot(np.real(packet_samps))
-            plt.plot(np.imag(packet_samps))
+            #plt.plot(np.real(packet_samps))
+            #plt.plot(np.imag(packet_samps))
+
             #plt.scatter(np.real(syms[:packet_useful_syms]), np.imag(syms[:packet_useful_syms]))
             #plt.xlim((-2, 2))
             #plt.ylim((-2, 2))
-            plt.show()
+            #plt.show()
 
             print("PER: %.3f, PER 100: %.3f" % ((1 - good_count/float(total_count)), 1 - float(good_count/100.0)))
             sys.stdout.flush()
