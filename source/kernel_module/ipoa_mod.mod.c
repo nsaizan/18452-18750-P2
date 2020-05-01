@@ -28,7 +28,6 @@ __attribute__((section("__versions"))) = {
 	{ 0x17a23a24, __VMLINUX_SYMBOL_STR(__class_create) },
 	{ 0x9d0b8a91, __VMLINUX_SYMBOL_STR(register_netdev) },
 	{ 0x9ada94c9, __VMLINUX_SYMBOL_STR(alloc_netdev_mqs) },
-	{ 0x7aa1756e, __VMLINUX_SYMBOL_STR(kvfree) },
 	{ 0x29dd89eb, __VMLINUX_SYMBOL_STR(free_netdev) },
 	{ 0x1f14a432, __VMLINUX_SYMBOL_STR(unregister_netdev) },
 	{ 0x6c09c2a4, __VMLINUX_SYMBOL_STR(del_timer) },
@@ -36,10 +35,12 @@ __attribute__((section("__versions"))) = {
 	{ 0xaada717, __VMLINUX_SYMBOL_STR(class_destroy) },
 	{ 0x99230a9, __VMLINUX_SYMBOL_STR(class_unregister) },
 	{ 0xb1fefe0, __VMLINUX_SYMBOL_STR(device_destroy) },
-	{ 0x16e5c2a, __VMLINUX_SYMBOL_STR(mod_timer) },
-	{ 0x15ba50a6, __VMLINUX_SYMBOL_STR(jiffies) },
+	{ 0x7aa1756e, __VMLINUX_SYMBOL_STR(kvfree) },
+	{ 0xab80f9a1, __VMLINUX_SYMBOL_STR(skb_copy) },
 	{ 0x33f110aa, __VMLINUX_SYMBOL_STR(skb_put) },
 	{ 0x9630f8eb, __VMLINUX_SYMBOL_STR(__alloc_skb) },
+	{ 0x16e5c2a, __VMLINUX_SYMBOL_STR(mod_timer) },
+	{ 0x15ba50a6, __VMLINUX_SYMBOL_STR(jiffies) },
 	{ 0x5daed631, __VMLINUX_SYMBOL_STR(netif_rx) },
 	{ 0x7f8f12e5, __VMLINUX_SYMBOL_STR(consume_skb) },
 	{ 0xda3e43d1, __VMLINUX_SYMBOL_STR(_raw_spin_unlock) },
@@ -62,4 +63,4 @@ __attribute__((section(".modinfo"))) =
 "depends=";
 
 
-MODULE_INFO(srcversion, "2FC30975B3D73C57A476809");
+MODULE_INFO(srcversion, "098395F864AD08AAEE20C69");
