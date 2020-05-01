@@ -13,8 +13,8 @@
 #define ITERATIONS (100)
 #define DURATION (SAMPLES * ITERATIONS)
 
-#define RAW_OUTPUT 0
-#define NOISE_AMP 0.5
+#define RAW_OUTPUT 1
+#define NOISE_AMP 0
 
 int main(){
 	/* Test Sound Data Generation */

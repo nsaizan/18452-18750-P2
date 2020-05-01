@@ -23,6 +23,7 @@ int main(){
 	/* Sending Output Data */
 	for(unsigned long i = 0; i < DURATION; i++){
 		audio_send(sine[i]);
+		//audio_send(0);
 	}
 	audio_flush_out();
 
