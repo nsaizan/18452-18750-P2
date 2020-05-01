@@ -10,7 +10,7 @@
 #define M_PI (3.14159265)
 #endif
 
-#define ITERATIONS (100)
+#define ITERATIONS (1000)
 #define DURATION (SAMPLES * ITERATIONS)
 
 #define RAW_OUTPUT 1
