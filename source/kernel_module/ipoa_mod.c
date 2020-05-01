@@ -330,7 +330,7 @@ static struct class *ipoa_char_class;
 phy_packet_buff_t *phy_packet_buff;
 phy_packet_buff_t *rx_phy_packet_buff;
 
-static int timer_delay = 1000;
+static int timer_delay = 10; // check the buffers at 100hz, 
 static struct timer_list ipoa_timer;
 static long int timer_data = 40;
 
@@ -523,7 +523,7 @@ int ipoa_receive(struct sk_buff *skb, struct net_device *dev)
 {
     // https://ufal.mff.cuni.cz/~jernej/2018/docs/predavanja15.pdf
     // will need to have some background thing listening, and then interrupt into this somehow? maybe add a file handler and it just writes in
-    // netif_receive_skb(struct sk_buff* skb); // NEED TO BE FROM INTERRUPT CONTEXT!?!?!?
+    // netif_receive_skb(struct sk_buff* skb); // NEED TO BE FROM INTERRUPT CONTEXT!?!?!
 
     unsigned char *data = skb->data;
     unsigned int datalen = skb->data_len;
@@ -536,7 +536,7 @@ int ipoa_receive(struct sk_buff *skb, struct net_device *dev)
 
     printk("IPOA receive function called, protocol = %d, datalen = %u, len = %u\n", protocol, datalen, len);
 
-    netif_rx(skb);
+    //netif_rx(skb);
     return 0;
 }
 
@@ -563,13 +563,15 @@ netdev_tx_t ipoa_xmit(struct sk_buff *skb,
 
     unsigned short protocol = skb->protocol;
 
+    int i = 1;
+
     dev->stats.tx_packets++;
     dev->stats.tx_bytes += len;
 
     printk("IPOA xmit function called, protocol = %d, datalen = %u, len = %u\n", protocol, datalen, len);
 
     // length of cb plus the actual data
-    unsigned int total_bytes = 48 + datalen;
+    unsigned int total_bytes = 48 + len + skb->hdr_len;
 
     unsigned int packets = (total_bytes / PHY_PACKET_DATA_SIZE) + (total_bytes % PHY_PACKET_DATA_SIZE == 0 ? 0 : 1);
 
@@ -590,7 +592,6 @@ netdev_tx_t ipoa_xmit(struct sk_buff *skb,
     first_packet->control.fields.sk_mac_header = skb->mac_header;
     first_packet->control.fields.sk_protocol = protocol; // just pack more things in here i guess
 
-    int i = 1;
 
     memcpy(first_packet->data, skb->cb, 48);
     handled_bytes += 48;
@@ -602,8 +603,6 @@ netdev_tx_t ipoa_xmit(struct sk_buff *skb,
     for (i = 1; i < packets; i++)
     {
         data_packet = new_data_packet();
-
-        //
         packet_data_len = total_bytes > PHY_PACKET_DATA_SIZE ? PHY_PACKET_DATA_SIZE : total_bytes;
 
         data_packet->control.fields.is_first = 0;
@@ -611,13 +610,12 @@ netdev_tx_t ipoa_xmit(struct sk_buff *skb,
         data_packet->control.fields.seq_num = i + 1;
         data_packet->control.fields.total_packets = packets;
 
-        memcpy(data_packet->data, skb->data + handled_bytes, packet_data_len);
+        memcpy(data_packet->data, skb->head + handled_bytes, packet_data_len);
 
-        handled_bytes += handled_bytes;
+        handled_bytes += packet_data_len;
         total_bytes -= packet_data_len;
 
         buff_add(data_packet, phy_packet_buff);
-
     }
 
     printk("IPOA internal buffer length is %d, added %d bytes of data\n", buff_len(phy_packet_buff), handled_bytes);
@@ -773,32 +771,82 @@ void ipoa_timer_callback(unsigned long data)
     // for now, just pop from the outbound buffer and call receive with it???
 
     phy_packet_t* packet = buff_pop(phy_packet_buff);
+    unsigned int copied_data_bytes = 0;
+
+    // this one is local to here, copy to another when passing to the receive function
+    static struct sk_buff* r_skb = NULL;
+
+    struct sk_buff* local_skb = NULL;
+
+    // will be building a local skb struct, reset on first packets, finish it on last packets
 
     // always assume its just one phy packet worth for now
     if (packet != NULL) {
-        struct sk_buff* skb = alloc_skb(IPOA_MTU, GFP_KERNEL);
+        if (packet->control.fields.seq_num == 1) {
+            
+            if (r_skb == NULL) { // if we dont have one yet, get one
+                r_skb = alloc_skb(IPOA_MTU, GFP_KERNEL);
+            } else {
+                dev_kfree_skb(r_skb); // just fucking reset it damn fuck this shit
+                r_skb = alloc_skb(IPOA_MTU, GFP_KERNEL);
+            }
+            
+            printk("detected first packet\n");
+            skb_reserve(r_skb, 64);
+            copied_data_bytes = 0;
+            memcpy(r_skb->cb, packet->data, 48);
+            r_skb->data_len = packet->control.fields.sk_data_len;
+            r_skb->mac_len = packet->control.fields.sk_mac_len;
+            r_skb->hdr_len = packet->control.fields.sk_hdr_len;
+            r_skb->transport_header = packet->control.fields.sk_transport_header;
+            r_skb->network_header = packet->control.fields.sk_network_header;
+            r_skb->mac_header = packet->control.fields.sk_mac_header;
+            r_skb->protocol = packet->control.fields.sk_protocol;
+            r_skb->dev = ipoa;
+            printk("started skb with length %d\n", r_skb->len);
+            kvfree(packet);
+        } else if (packet->control.fields.seq_num == packet->control.fields.total_packets) {
+            printk("detected last packet\n");
+            memcpy(r_skb->head + copied_data_bytes, packet->data, packet->control.fields.data_len);
+            skb_put(r_skb, packet->control.fields.data_len);
+            copied_data_bytes += packet->control.fields.data_len;
+            kvfree(packet);
+            skb_put(r_skb, packet->control.fields.sk_hdr_len); // i dont fucking know
+            printk("finished up skb with length %d\n", r_skb->len);
+            local_skb = skb_copy(r_skb, GFP_KERNEL);
+            ipoa_receive(local_skb, ipoa);
+            // eventually, copy and call the other thing
+        } else {
+            printk("detected general data packet\n");
+            memcpy(r_skb->head + copied_data_bytes, packet->data, packet->control.fields.data_len);
+            skb_put(r_skb, packet->control.fields.data_len);
+            copied_data_bytes += packet->control.fields.data_len;
+            printk("added to skb with length %d\n", r_skb->len);
+            kvfree(packet);
+        }
+        // struct sk_buff* skb =
     
-        skb_reserve(skb, 64);//sk->sk_prot->max_header);
+        // skb_reserve(skb, 64);//sk->sk_prot->max_header);
         
-        memcpy(skb->cb, packet->data, 48);
-        skb->data = skb_put(skb, packet->control.fields.sk_data_len);
-        skb->len = packet->control.fields.sk_len;
-        skb->data_len = packet->control.fields.sk_data_len;
-        skb->mac_len = packet->control.fields.sk_mac_len;
-        skb->hdr_len = packet->control.fields.sk_hdr_len;
-        skb->transport_header = packet->control.fields.sk_transport_header;
-        skb->network_header = packet->control.fields.sk_network_header;
-        skb->mac_header = packet->control.fields.sk_mac_header;
-        skb->protocol = packet->control.fields.sk_protocol;
-        skb->dev = ipoa;
-        ipoa_receive(skb, ipoa);
+        // memcpy(skb->cb, packet->data, 48);
+        // skb->data = skb_put(skb, packet->control.fields.sk_data_len);
+        // skb->len = packet->control.fields.sk_len;
+        // skb->data_len = packet->control.fields.sk_data_len;
+        // skb->mac_len = packet->control.fields.sk_mac_len;
+        // skb->hdr_len = packet->control.fields.sk_hdr_len;
+        // skb->transport_header = packet->control.fields.sk_transport_header;
+        // skb->network_header = packet->control.fields.sk_network_header;
+        // skb->mac_header = packet->control.fields.sk_mac_header;
+        // skb->protocol = packet->control.fields.sk_protocol;
+        // skb->dev = ipoa;
+        // ipoa_receive(skb, ipoa);
     }
 
 
 
     volatile int ret_val;
     /* print log */
-    printk("kernel timer callback executing, data is %ld\n", data);
+    // printk("IPOA kernel timer callback executing, data is %ld\n", data);
     /* setup timer interval to msecs */
     ret_val = mod_timer(&ipoa_timer, jiffies + msecs_to_jiffies(timer_delay));
     if (ret_val)
