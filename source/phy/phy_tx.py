@@ -130,7 +130,7 @@ def generateRealSamps(data_bytes):
     interpolate = sig.lfilter(b, a, interpolate)
     np.save("iq_sig.npy", interpolate)
 
-    shift = shiftSamples(interpolate, 5000, sr=real_samp_rate)
+    shift = shiftSamples(interpolate, 16000, sr=real_samp_rate)
     samps = np.real(shift)
     samps = np.multiply(samps, 0.05) # Scale down for hardware
     samps.astype('float32').tofile("real_sig.bin")

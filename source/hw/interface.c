@@ -26,6 +26,8 @@ void file_rec_interface_init(void){
                 printf("ERROR: failed to open inbound fifo\n");
                 exit(0);
         }
+	int flags = fcntl(rec_fd, F_GETFL, 0);
+	fcntl(rec_fd, F_SETFL, flags | O_NONBLOCK);
 	printf(" rx pipe opened!\n");
         return;
 }
@@ -39,6 +41,8 @@ void file_send_interface_init(void){
                 printf("ERROR: failed to open outbound fifo\n");
                 exit(0);
         }
+	int flags = fcntl(send_fd, F_GETFL, 0);
+	fcntl(send_fd, F_SETFL, flags | O_NONBLOCK);
 	printf(" tx pipe opened!\n");
         return;
 }
@@ -113,7 +117,11 @@ void file_interface_send(void){
 	int iterations = 0;
 	int limit = 4;
 	while(cnt < 4){
-		cnt += read(send_fd, &file_data[cnt], 1);
+		int res = read(send_fd, &file_data[cnt], 1);
+		if (res < 0){
+			res = 0;
+		}
+		cnt += res;
 		iterations++;
 		if(iterations >= limit && cnt == 0){
 			break;

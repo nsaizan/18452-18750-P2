@@ -114,7 +114,7 @@ def generateZCSequence(l):
         pn.append(np.exp(-1j*np.pi*u*n*(n+np.mod(nzc, 2))/nzc))
     return pn
 
-turbolib = ctypes.CDLL('/home/griffin/Documents/wireless-class/18452-18750-P2/source/phy/libsrslte_phy.so')
+turbolib = ctypes.CDLL('/home/nsaizan/Documents/18452-18750-P2/source/phy/libsrslte_phy.so')
 # make srslte_phy
 
 def turboInit():

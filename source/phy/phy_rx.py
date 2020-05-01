@@ -61,7 +61,7 @@ def OFDMtoSymbols(time_syms):
 def getDataSymbols(packet_samps):
     all_data_syms = []
     start_samp = len(preamble_samps)
-    print("%d %d" %(len(preamble_samps), len(packet_samps)))
+    #print("%d %d" %(len(preamble_samps), len(packet_samps)))
     for i in range(num_fft_slices):
         start = start_samp + i*(fft_size+cp_samples) + cp_samples - 1 # Not quite perfect sampling
         end = start + fft_size
@@ -111,13 +111,13 @@ def decodePacket():
     r = extractShortRefs(packet_samps, 0)
     # Calculate a freqeuncy offset based on the differences between each phase
     freq_offset = np.average(np.diff(r)) / len(shortZC) / 2 / np.pi * bandwidth
-    print("Found freq offset %.3f" % freq_offset)
+    #print("Found freq offset %.3f" % freq_offset)
     # Correct for frequency offset
     freq_corr = shiftSamples(packet_samps, -freq_offset)
     #freq_corr = packet_samps
     # Find phase offset
     phase_offset = np.average(extractShortRefs(freq_corr, 0))
-    print(phase_offset)
+    #print(phase_offset)
     # Correct for phase offset
     phase_corr = np.multiply(freq_corr, np.exp(-phase_offset*1j))
     np.save("last_packet.npy", phase_corr)
@@ -129,9 +129,19 @@ def decodePacket():
     data_syms = getDataSymbols(phase_corr)
     return data_syms
 
+def calcPER():
+    count = 0
+    for i, x in enumerate(lastn):
+        if x < time.time() - 20:
+            del lastn[i]
+    
+    per = 1 - (float(len(lastn)) / 40.0)
+    print("PER (last 20 sec): %.3f" % per)
+
 total_count = 0
 good_count = 0
 peaks = []
+lastn = []
 t = time.time()
 tc = 0
 def processSample(s):
@@ -139,9 +149,10 @@ def processSample(s):
     tc += 1
 
     if time.time() > t + 1.0:
-        print("Received samples: %d" % tc)
+        #print("Received samples: %d" % tc)
         tc = 0
         t = time.time()
+        calcPER()
 
     if rx_state == MODE_WAIT:
         cazac_buffer.append(s)
@@ -185,8 +196,9 @@ def processSample(s):
                 #plt.show()
                 pass
             else:
+                lastn.append(time.time())
                 good_count += 1
-                print(data_string[50:60])
+                print("GOOD DECODE: %s" % data_string)
                 write_file.write(data_string)
                 write_file.flush()
             #plt.plot(np.real(packet_samps))
@@ -197,7 +209,7 @@ def processSample(s):
             #plt.ylim((-2, 2))
             #plt.show()
 
-            print("PER: %.3f, PER 100: %.3f" % ((1 - good_count/float(total_count)), 1 - float(good_count/100.0)))
+            #print("PER: %.3f, PER 100: %.3f" % ((1 - good_count/float(total_count)), 1 - float(good_count/100.0)))
             sys.stdout.flush()
             packet_samps_count = 0
             rx_state = MODE_WAIT
